@@ -1,0 +1,64 @@
+/* ── Padding example block ── */
+.pad-ex {
+  margin: 12px 0;
+  border: 1px solid #2d3748;
+  border-radius: 6px;
+  padding: 12px 14px;
+  background: #0d1117;
+}
+.pad-valid  { border-color: rgba(34, 197, 94, 0.22); }
+.pad-invalid { border-color: rgba(239, 68, 68, 0.22); }
+
+.pad-ex-label {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.pad-valid  .pad-ex-label { color: #4ade80; }
+.pad-invalid .pad-ex-label { color: #f87171; }
+
+.pad-ex-bytes {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.pad-byte {
+  width: 32px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 4px;
+  background: #111827;
+  color: #374151;
+  border: 1px solid #1e293b;
+  flex-shrink: 0;
+}
+.pad-byte.pad {
+  background: #042f2e;
+  color: #2dd4bf;
+  border-color: rgba(6, 182, 212, 0.22);
+}
+.pad-byte.bad {
+  background: #450a0a;
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.22);
+}
+
+.pad-ex-desc {
+  font-size: 12px;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* Padding warning callout */
+.pad-warn {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.25);
+  border-left-color: #ef4444;
+}

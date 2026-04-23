@@ -15,10 +15,14 @@ import { useAttack } from './hooks/useAttack';
 import AttackView from './components/AttackView';
 import StepControls from './components/StepControls';
 import StepInfo from './components/StepInfo';
+import LearnPage from './components/LearnPage';
+
+type AppPage = 'attack' | 'learn';
 
 const DEFAULT_MESSAGE = 'Attack at dawn!';
 
 export default function App() {
+  const [page, setPage] = useState<AppPage>('attack');
   const [inputMessage, setInputMessage] = useState(DEFAULT_MESSAGE);
   const [scenario, setScenario] = useState<ScenarioData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -61,80 +65,99 @@ export default function App() {
 
       {/* ── Page header ── */}
       <header className="page-header">
-        <div className="header-brand">
-          <span className="brand-icon">🔐</span>
-          <div>
-            <h1>CBC Padding Oracle Attack</h1>
-            <p>Encrypt a message, then step through the attack that recovers it without knowing the key.</p>
+        <div className="header-top">
+          <div className="header-brand">
+            <span className="brand-icon">🔐</span>
+            <div>
+              <h1>CBC Padding Oracle Attack</h1>
+              <p>Encrypt a message, then step through the attack that recovers it without knowing the key.</p>
+            </div>
           </div>
+
+          <nav className="page-nav">
+            <button
+              className={`pnav-btn${page === 'attack' ? ' active' : ''}`}
+              onClick={() => setPage('attack')}
+            >
+              Attack Visualizer
+            </button>
+            <button
+              className={`pnav-btn${page === 'learn' ? ' active' : ''}`}
+              onClick={() => setPage('learn')}
+            >
+              Learn
+            </button>
+          </nav>
         </div>
 
-        <form
-          className="message-form"
-          onSubmit={e => { e.preventDefault(); handleEncrypt(); }}
-        >
-          <label className="form-label" htmlFor="secret-input">Secret message:</label>
-          <div className="form-row">
-            <input
-              id="secret-input"
-              type="text"
-              className="message-input"
-              value={inputMessage}
-              onChange={e => setInputMessage(e.target.value)}
-              placeholder="Type your secret message…"
-              maxLength={64}
-              disabled={loading}
-              autoComplete="off"
-            />
-            <button type="submit" className="encrypt-btn" disabled={loading || !inputMessage.trim()}>
-              {loading ? <><span className="spinner" /> Encrypting…</> : '▶ Encrypt & Attack'}
-            </button>
-          </div>
-        </form>
+        {page === 'attack' && (
+          <form
+            className="message-form"
+            onSubmit={e => { e.preventDefault(); handleEncrypt(); }}
+          >
+            <label className="form-label" htmlFor="secret-input">Secret message:</label>
+            <div className="form-row">
+              <input
+                id="secret-input"
+                type="text"
+                className="message-input"
+                value={inputMessage}
+                onChange={e => setInputMessage(e.target.value)}
+                placeholder="Type your secret message…"
+                maxLength={64}
+                disabled={loading}
+                autoComplete="off"
+              />
+              <button type="submit" className="encrypt-btn" disabled={loading || !inputMessage.trim()}>
+                {loading ? <><span className="spinner" /> Encrypting…</> : '▶ Encrypt & Attack'}
+              </button>
+            </div>
+          </form>
+        )}
       </header>
 
-      {/* ── Main content ── */}
-      {loading && !scenario && (
-        <div className="page-loading">
-          <div className="loading-spinner-big" />
-          <p>Generating AES-128 key and encrypting…</p>
-        </div>
-      )}
+      {/* ── Learn page ── */}
+      {page === 'learn' && <LearnPage />}
 
-      {scenario && attack.state && (
+      {/* ── Attack page ── */}
+      {page === 'attack' && (
         <>
-          {/* Ciphertext chain */}
-          <CiphertextChain
-            scenario={scenario}
-            targetBlockIndex={targetBlockIndex}
-            onSelectBlock={handleSelectBlock}
-          />
+          {loading && !scenario && (
+            <div className="page-loading">
+              <div className="loading-spinner-big" />
+              <p>Generating AES-128 key and encrypting…</p>
+            </div>
+          )}
 
-          {/* Main attack visualization */}
-          <AttackView
-            attackState={attack.state}
-            showIntermediate={showIntermediate}
-          />
-
-          {/* Step info bar */}
-          <StepInfo attackState={attack.state} />
-
-          {/* Navigation controls */}
-          <StepControls
-            state={attack.state}
-            canBack={attack.canStepBack}
-            isPlaying={attack.isPlaying}
-            speed={attack.speed}
-            showIntermediate={showIntermediate}
-            onBack={attack.stepBackward}
-            onForward={attack.stepForward}
-            onSkip={attack.skipToByte}
-            onPlay={attack.play}
-            onPause={attack.pause}
-            onReset={attack.reset}
-            onSetSpeed={attack.setSpeed}
-            onToggleIntermediate={() => setShowIntermediate(v => !v)}
-          />
+          {scenario && attack.state && (
+            <>
+              <CiphertextChain
+                scenario={scenario}
+                targetBlockIndex={targetBlockIndex}
+                onSelectBlock={handleSelectBlock}
+              />
+              <AttackView
+                attackState={attack.state}
+                showIntermediate={showIntermediate}
+              />
+              <StepInfo attackState={attack.state} />
+              <StepControls
+                state={attack.state}
+                canBack={attack.canStepBack}
+                isPlaying={attack.isPlaying}
+                speed={attack.speed}
+                showIntermediate={showIntermediate}
+                onBack={attack.stepBackward}
+                onForward={attack.stepForward}
+                onSkip={attack.skipToByte}
+                onPlay={attack.play}
+                onPause={attack.pause}
+                onReset={attack.reset}
+                onSetSpeed={attack.setSpeed}
+                onToggleIntermediate={() => setShowIntermediate(v => !v)}
+              />
+            </>
+          )}
         </>
       )}
     </div>

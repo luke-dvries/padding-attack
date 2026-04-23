@@ -81,6 +81,34 @@ body {
   gap: 14px;
 }
 
+/* Header top row: brand + page nav */
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.page-nav {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.pnav-btn {
+  padding: 8px 18px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.pnav-btn:hover { color: var(--text); border-color: var(--blue); }
+.pnav-btn.active { background: var(--blue); border-color: var(--blue); color: white; }
+
 .header-brand {
   display: flex;
   align-items: center;

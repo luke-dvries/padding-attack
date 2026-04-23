@@ -1,0 +1,6 @@
+/* CBCTab: vulnerability callout uses a red left-border (warn) override */
+.cbc-vuln {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.25);
+  border-left-color: #ef4444;
+}
