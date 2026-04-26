@@ -3,15 +3,19 @@ import CBCTab     from './learn/CBCTab';
 import PaddingTab from './learn/PaddingTab';
 import OracleTab  from './learn/OracleTab';
 import AttackTab  from './learn/AttackTab';
+import HistoryTab from './learn/HistoryTab';
+import ImpactTab  from './learn/ImpactTab';
 import './LearnPage.css';
 
-type Tab = 'cbc' | 'padding' | 'oracle' | 'attack';
+type Tab = 'cbc' | 'padding' | 'oracle' | 'attack' | 'history' | 'impact';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'cbc',     label: '1. AES-CBC' },
   { id: 'padding', label: '2. PKCS#7 Padding' },
   { id: 'oracle',  label: '3. Padding Oracle' },
   { id: 'attack',  label: '4. The Attack' },
+  { id: 'history', label: '5. History' },
+  { id: 'impact',  label: '6. Real-World Impact' },
 ];
 
 export default function LearnPage() {
@@ -36,6 +40,8 @@ export default function LearnPage() {
         {tab === 'padding' && <PaddingTab />}
         {tab === 'oracle'  && <OracleTab />}
         {tab === 'attack'  && <AttackTab />}
+        {tab === 'history' && <HistoryTab />}
+        {tab === 'impact'  && <ImpactTab />}
       </div>
     </div>
   );
