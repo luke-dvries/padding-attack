@@ -21,7 +21,7 @@ export interface UseAttackReturn {
   speed: number;
   stepForward: () => void;
   stepBackward: () => void;
-  skipToByte: () => void;   // fast-forward to next byte found (next valid oracle response)
+  skipToByte: () => void;
   play: () => void;
   pause: () => void;
   reset: () => void;
@@ -32,17 +32,10 @@ export function useAttack(
   scenario: ScenarioData | null,
   targetBlockIndex: number
 ): UseAttackReturn {
-  const [state, _setState] = useState<AttackState | null>(null);
+  const [state, setState] = useState<AttackState | null>(null);
   const [history, setHistory] = useState<AttackState[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(400);
-
-  // Keep a ref always in sync with state so executeStep can read it synchronously
-  const stateRef = useRef<AttackState | null>(null);
-  const setState = useCallback((next: AttackState | null) => {
-    stateRef.current = next;
-    _setState(next);
-  }, []);
+  const [speed, setSpeed] = useState(300);
 
   const playRef = useRef(false);
   const speedRef = useRef(speed);
@@ -68,41 +61,56 @@ export function useAttack(
     );
     setState(initial);
     setHistory([]);
-  }, [scenario, targetBlockIndex, setState]);
+  }, [scenario, targetBlockIndex]);
 
-  // ── Core step (returns next state) ───────────────────────────────────────
-  const executeStep = useCallback(async (): Promise<AttackState | null> => {
-    if (!scenario) return null;
+  // ── Core step: use functional setState to always read the latest state ────
+  const executeStep = useCallback((): Promise<AttackState | null> => {
+    if (!scenario) return Promise.resolve(null);
 
-    const s = stateRef.current;
-    if (!s) return null;
-    if (s.phase === 'block_complete') return s;
+    return new Promise<AttackState | null>((resolve) => {
+      setState(prev => {
+        if (!prev) { resolve(null); return prev; }
+        if (prev.phase === 'block_complete') { resolve(prev); return prev; }
 
-    if (s.phase === 'idle') {
-      const next = startAttack(s);
-      setHistory(h => [...h, s]);
-      setState(next);
-      return next;
-    }
+        if (prev.phase === 'idle') {
+          const next = startAttack(prev);
+          setHistory(h => [...h, prev]);
+          resolve(next);
+          return next;
+        }
 
-    if (s.phase === 'byte_found') {
-      const next = advanceToNextByte(s);
-      setHistory(h => [...h, s]);
-      setState(next);
-      return next;
-    }
+        if (prev.phase === 'byte_found') {
+          const next = advanceToNextByte(prev);
+          setHistory(h => [...h, prev]);
+          resolve(next);
+          return next;
+        }
 
-    // phase === 'attacking' — make one oracle query
-    const modPrev = buildModifiedPrevBlock(s, s.currentGuess);
-    const oracleResult = await scenario.oracle(
-      new Uint8Array(modPrev),
-      new Uint8Array(s.cipherBlock)
-    );
-    const next = applyOracleResult(s, oracleResult, modPrev);
-    setHistory(h => [...h, s]);
-    setState(next);
-    return next;
-  }, [scenario, setState]);
+        // phase === 'attacking' — need an async oracle query.
+        // We can't await inside setState, so kick off the oracle call and
+        // return the current state unchanged. The oracle callback will
+        // apply the result via a second setState.
+        const s = prev;
+        const modPrev = buildModifiedPrevBlock(s, s.currentGuess);
+        scenario.oracle(
+          new Uint8Array(modPrev),
+          new Uint8Array(s.cipherBlock)
+        ).then(oracleResult => {
+          setState(cur => {
+            // Guard: if state was reset while the oracle was in flight, bail
+            if (!cur || cur !== s) { resolve(cur); return cur; }
+            const next = applyOracleResult(s, oracleResult, modPrev);
+            setHistory(h => [...h, s]);
+            resolve(next);
+            return next;
+          });
+        });
+
+        // Return prev unchanged — the real update happens in the .then()
+        return prev;
+      });
+    });
+  }, [scenario]);
 
   // ── Public controls ───────────────────────────────────────────────────────
   const stepForward = useCallback(() => { executeStep(); }, [executeStep]);
@@ -110,11 +118,10 @@ export function useAttack(
   const stepBackward = useCallback(() => {
     setHistory(h => {
       if (h.length === 0) return h;
-      const prev = h[h.length - 1];
-      setState(prev);
+      setState(h[h.length - 1]);
       return h.slice(0, -1);
     });
-  }, [setState]);
+  }, []);
 
   /** Fast-forward through failing oracle guesses until the next byte is found */
   const skipToByte = useCallback(async () => {
@@ -143,30 +150,31 @@ export function useAttack(
     );
     setState(initial);
     setHistory([]);
-  }, [scenario, targetBlockIndex, setState]);
+  }, [scenario, targetBlockIndex]);
 
   const play = useCallback(() => { setIsPlaying(true); playRef.current = true; }, []);
   const pause = useCallback(() => { setIsPlaying(false); playRef.current = false; }, []);
   const handleSetSpeed = useCallback((ms: number) => { setSpeed(ms); speedRef.current = ms; }, []);
 
-  // ── Auto-play loop ────────────────────────────────────────────────────────
+  // ── Auto-play: schedule one step at a time via setTimeout ─────────────────
+  // Each state update triggers a re-render → effect re-runs → next step scheduled.
+  // This avoids stale-ref issues from a long-running async while loop.
   useEffect(() => {
-    if (!isPlaying) return;
-    let cancelled = false;
-    const runLoop = async () => {
-      while (playRef.current && !cancelled) {
-        const next = await executeStep();
-        if (!next || next.phase === 'block_complete') {
-          setIsPlaying(false); playRef.current = false; break;
-        }
-        if (next.phase === 'attacking' || next.phase === 'byte_found') {
-          await sleep(speedRef.current);
-        }
-      }
-    };
-    runLoop();
-    return () => { cancelled = true; };
-  }, [isPlaying, executeStep]);
+    if (!isPlaying || !state) return;
+    if (state.phase === 'block_complete') {
+      setIsPlaying(false);
+      playRef.current = false;
+      return;
+    }
+
+    const delay = state.phase === 'idle' ? 0 : speedRef.current;
+    const timer = setTimeout(() => {
+      if (!playRef.current) return;
+      executeStep();
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [isPlaying, state, executeStep]);
 
   return {
     state, canStepBack: history.length > 0, isPlaying, speed,
@@ -177,5 +185,3 @@ export function useAttack(
 export function isBlockFullyRecovered(knownPlaintext: (number | null)[], blockSize = BLOCK_SIZE): boolean {
   return knownPlaintext.slice(0, blockSize).every(b => b !== null);
 }
-
-function sleep(ms: number): Promise<void> { return new Promise(r => setTimeout(r, ms)); }
