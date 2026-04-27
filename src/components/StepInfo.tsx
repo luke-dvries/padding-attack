@@ -77,18 +77,18 @@ export default function StepInfo({ attackState }: StepInfoProps) {
           <span className="si-math-line">
             Byte {bytePos}: guess&nbsp;
             <code>0x{byteToHex(guess)}</code>
-            &nbsp;→ <code>I[{bytePos}] ⊕ 0x{byteToHex(guess)} ≠ 0x{byteToHex(pad)}</code>
+            &nbsp;→ <code>I<sub>i</sub>[{bytePos}] ⊕ 0x{byteToHex(guess)} ≠ 0x{byteToHex(pad)}</code>
             &nbsp;— try next
           </span>
         ) : intermediateFound !== undefined && plaintextFound !== undefined ? (
           <div className="si-math-found">
             <span className="si-math-line">
-              <code>I[{bytePos}]</code> = target&nbsp;⊕&nbsp;guess =&nbsp;
+              <code>I<sub>i</sub>[{bytePos}]</code> = target&nbsp;⊕&nbsp;guess =&nbsp;
               <code>0x{byteToHex(pad)} ⊕ 0x{byteToHex(guess)} = 0x{byteToHex(intermediateFound)}</code>
             </span>
             <span className="si-math-arrow">→</span>
             <span className="si-math-line">
-              <code>P[{bytePos}]</code> = <code>I[{bytePos}] ⊕ C_orig[{bytePos}]</code> =&nbsp;
+              <code>P<sub>i</sub>[{bytePos}]</code> = <code>I<sub>i</sub>[{bytePos}] ⊕ C<sub>prev</sub>[{bytePos}]</code> =&nbsp;
               <code>0x{byteToHex(intermediateFound)} ⊕ 0x{byteToHex(origByte)} =&nbsp;
                 <strong>0x{byteToHex(plaintextFound)}</strong>
               </code>

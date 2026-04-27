@@ -23,35 +23,25 @@ export default function CBCTab() {
       <div className="lp-formula-box">
         <div className="lp-formula">
           <span className="lp-f-lbl">Encryption</span>
-          <code>C[i] = AES_encrypt( P[i] ⊕ C[i−1] )</code>
-          <span className="lp-f-note">where C[−1] = IV</span>
+          <code>C<sub>i</sub> = AES_encrypt( P<sub>i</sub> ⊕ C<sub>i−1</sub> )</code>
+          <span className="lp-f-note">where C<sub>−1</sub> = IV</span>
         </div>
       </div>
 
       <CBCEncryptSVG />
 
-      <h3>Decryption &amp; The Intermediate State</h3>
+      <h3>Decryption</h3>
       <p>
         Decryption runs the chain in reverse: AES-decrypt each ciphertext block, then XOR with
-        the previous ciphertext block. The raw AES decryption output — before the final XOR —
-        is called the <strong>intermediate state</strong>, written <code>I[i]</code>. This value
-        is fixed for a given C[i] regardless of what precedes it.
+        the previous ciphertext block. <code>AES_decrypt(C<sub>i</sub>)</code> depends only on
+        C<sub>i</sub> and the key — its output is fixed regardless of what precedes it.
       </p>
 
       <div className="lp-formula-box">
         <div className="lp-formula">
           <span className="lp-f-lbl">Decryption</span>
-          <code>P[i] = AES_decrypt( C[i] ) ⊕ C[i−1]</code>
-          <span className="lp-f-note">where C[−1] = IV</span>
-        </div>
-        <div className="lp-formula" style={{ marginTop: 10 }}>
-          <span className="lp-f-lbl">Intermediate</span>
-          <code>I[i] = AES_decrypt( C[i] )</code>
-          <span className="lp-f-note">depends only on C[i] and the key — not on C[i−1]</span>
-        </div>
-        <div className="lp-formula" style={{ marginTop: 6 }}>
-          <span className="lp-f-lbl">Therefore</span>
-          <code>P[i] = I[i] ⊕ C[i−1]</code>
+          <code>P<sub>i</sub> = AES_decrypt( C<sub>i</sub> ) ⊕ C<sub>i−1</sub></code>
+          <span className="lp-f-note">where C<sub>−1</sub> = IV</span>
         </div>
       </div>
 
@@ -60,14 +50,13 @@ export default function CBCTab() {
       <h3>The Key Vulnerability</h3>
       <div className="lp-callout cbc-vuln">
         <p>
-          Because <code>P[i] = I[i] ⊕ C[i−1]</code>, anyone who can <em>modify</em> the previous
+          Because <code>P<sub>i</sub> = AES_decrypt(C<sub>i</sub>) ⊕ C<sub>i−1</sub></code>, anyone who can <em>modify</em> the previous
           ciphertext block can control the decrypted plaintext —
-          <strong> without touching C[i] and without knowing the AES key</strong>.
+          <strong> without touching C<sub>i</sub> and without knowing the AES key</strong>.
         </p>
         <p>
-          The AES key is only used inside the black-box <code>AES_decrypt(C[i])</code> step to
-          produce <code>I[i]</code>. An attacker never needs to know <code>I[i]</code> directly;
-          they can <em>infer</em> it byte-by-byte by exploiting a padding oracle.
+          The AES key is hidden inside the black-box <code>AES_decrypt(C<sub>i</sub>)</code> step.
+          An attacker can <em>infer</em> its output byte-by-byte by exploiting a padding oracle.
         </p>
         <p>
           AES-CBC provides <strong>confidentiality</strong> but not <strong>integrity</strong>.
@@ -103,7 +92,7 @@ function CBCEncryptSVG() {
 
         {/* Block 0 */}
         <rect x={cx0 - bw / 2} y={pY} width={bw} height={bh} rx={4} fill="#052e16" stroke="#22c55e" strokeWidth={1.5} />
-        <text x={cx0} y={pY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#4ade80" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">P[0]</text>
+        <text x={cx0} y={pY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#4ade80" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">P<tspan dy="4" fontSize="8">0</tspan></text>
         <line x1={cx0} y1={pY + bh} x2={cx0} y2={xY - xr - 1} stroke="#22c55e" strokeWidth={1.5} markerEnd="url(#enc-arr)" />
 
         <circle cx={cx0} cy={xY} r={xr} fill="#1a0f00" stroke="#f97316" strokeWidth={1.5} />
@@ -115,7 +104,7 @@ function CBCEncryptSVG() {
         <line x1={cx0} y1={aY + aH} x2={cx0} y2={cY} stroke="#60a5fa" strokeWidth={1.5} markerEnd="url(#enc-arr)" />
 
         <rect x={cx0 - bw / 2} y={cY} width={bw} height={bh} rx={4} fill="#0c2340" stroke="#60a5fa" strokeWidth={1.5} />
-        <text x={cx0} y={cY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#60a5fa" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">C[0]</text>
+        <text x={cx0} y={cY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#60a5fa" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">C<tspan dy="4" fontSize="8">0</tspan></text>
 
         {/* C[0] → XOR[1] routing */}
         <path
@@ -125,7 +114,7 @@ function CBCEncryptSVG() {
 
         {/* Block 1 */}
         <rect x={cx1 - bw / 2} y={pY} width={bw} height={bh} rx={4} fill="#052e16" stroke="#22c55e" strokeWidth={1.5} />
-        <text x={cx1} y={pY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#4ade80" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">P[1]</text>
+        <text x={cx1} y={pY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#4ade80" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">P<tspan dy="4" fontSize="8">1</tspan></text>
         <line x1={cx1} y1={pY + bh} x2={cx1} y2={xY - xr - 1} stroke="#22c55e" strokeWidth={1.5} markerEnd="url(#enc-arr)" />
 
         <circle cx={cx1} cy={xY} r={xr} fill="#1a0f00" stroke="#f97316" strokeWidth={1.5} />
@@ -137,7 +126,7 @@ function CBCEncryptSVG() {
         <line x1={cx1} y1={aY + aH} x2={cx1} y2={cY} stroke="#60a5fa" strokeWidth={1.5} markerEnd="url(#enc-arr)" />
 
         <rect x={cx1 - bw / 2} y={cY} width={bw} height={bh} rx={4} fill="#0c2340" stroke="#60a5fa" strokeWidth={1.5} />
-        <text x={cx1} y={cY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#60a5fa" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">C[1]</text>
+        <text x={cx1} y={cY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#60a5fa" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">C<tspan dy="4" fontSize="8">1</tspan></text>
         <text x={cx1 + bw / 2 + 10} y={cY + bh / 2 + 5} fill="#4b5563" fontSize={20}>→ …</text>
       </svg>
     </figure>
@@ -145,14 +134,14 @@ function CBCEncryptSVG() {
 }
 
 function CBCDecryptSVG() {
-  // Flow: C (top) → AES_D → [I[i] label] → XOR → P (bottom)
+  // Flow: C (top) → AES_D → XOR → P (bottom)
   const bw = 72, bh = 28, xr = 18, aH = 32;
   const cx0 = 185, cx1 = 420;
   const cY = 10, aY = 52, xY = 112, pY = 145;
 
   return (
     <figure className="lp-diagram">
-      <figcaption>CBC Decryption — the intermediate state I[i] is highlighted in purple</figcaption>
+      <figcaption>CBC Decryption — two blocks</figcaption>
       <svg viewBox="0 0 540 185" className="lp-svg" aria-label="CBC decryption diagram">
         <defs>
           <marker id="dec-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
@@ -167,23 +156,20 @@ function CBCDecryptSVG() {
 
         {/* Block 0 */}
         <rect x={cx0 - bw / 2} y={cY} width={bw} height={bh} rx={4} fill="#0c2340" stroke="#60a5fa" strokeWidth={1.5} />
-        <text x={cx0} y={cY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#60a5fa" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">C[0]</text>
+        <text x={cx0} y={cY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#60a5fa" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">C<tspan dy="4" fontSize="8">0</tspan></text>
         <line x1={cx0} y1={cY + bh} x2={cx0} y2={aY} stroke="#60a5fa" strokeWidth={1.5} markerEnd="url(#dec-arr)" />
 
         <rect x={cx0 - bw / 2} y={aY} width={bw} height={aH} rx={4} fill="#0c2340" stroke="#60a5fa" strokeWidth={1.5} />
         <text x={cx0} y={aY + aH / 2} textAnchor="middle" dominantBaseline="central" fill="#93c5fd" fontSize={11} fontFamily="Consolas,monospace" fontWeight="bold">AES_D</text>
 
-        {/* I[0] label on the AES_D → XOR arrow */}
-        <line x1={cx0} y1={aY + aH} x2={cx0} y2={xY - xr - 1} stroke="#a855f7" strokeWidth={1.5} markerEnd="url(#dec-arr)" />
-        <rect x={cx0 + 5} y={aY + aH + 5} width={34} height={17} rx={3} fill="#1e1152" />
-        <text x={cx0 + 22} y={aY + aH + 13} textAnchor="middle" dominantBaseline="central" fill="#a78bfa" fontSize={10} fontFamily="Consolas,monospace" fontWeight="bold">I[0]</text>
+        <line x1={cx0} y1={aY + aH} x2={cx0} y2={xY - xr - 1} stroke="#60a5fa" strokeWidth={1.5} markerEnd="url(#dec-arr)" />
 
         <circle cx={cx0} cy={xY} r={xr} fill="#1a0f00" stroke="#f97316" strokeWidth={1.5} />
         <text x={cx0} y={xY + 1} textAnchor="middle" dominantBaseline="central" fill="#f97316" fontSize={18}>⊕</text>
         <line x1={cx0} y1={xY + xr + 1} x2={cx0} y2={pY} stroke="#22c55e" strokeWidth={1.5} markerEnd="url(#dec-arr)" />
 
         <rect x={cx0 - bw / 2} y={pY} width={bw} height={bh} rx={4} fill="#052e16" stroke="#22c55e" strokeWidth={1.5} />
-        <text x={cx0} y={pY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#4ade80" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">P[0]</text>
+        <text x={cx0} y={pY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#4ade80" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">P<tspan dy="4" fontSize="8">0</tspan></text>
 
         {/* C[0] → XOR[1] routing for block 1 */}
         <path
@@ -193,22 +179,20 @@ function CBCDecryptSVG() {
 
         {/* Block 1 */}
         <rect x={cx1 - bw / 2} y={cY} width={bw} height={bh} rx={4} fill="#0c2340" stroke="#60a5fa" strokeWidth={1.5} />
-        <text x={cx1} y={cY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#60a5fa" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">C[1]</text>
+        <text x={cx1} y={cY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#60a5fa" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">C<tspan dy="4" fontSize="8">1</tspan></text>
         <line x1={cx1} y1={cY + bh} x2={cx1} y2={aY} stroke="#60a5fa" strokeWidth={1.5} markerEnd="url(#dec-arr)" />
 
         <rect x={cx1 - bw / 2} y={aY} width={bw} height={aH} rx={4} fill="#0c2340" stroke="#60a5fa" strokeWidth={1.5} />
         <text x={cx1} y={aY + aH / 2} textAnchor="middle" dominantBaseline="central" fill="#93c5fd" fontSize={11} fontFamily="Consolas,monospace" fontWeight="bold">AES_D</text>
 
-        <line x1={cx1} y1={aY + aH} x2={cx1} y2={xY - xr - 1} stroke="#a855f7" strokeWidth={1.5} markerEnd="url(#dec-arr)" />
-        <rect x={cx1 + 5} y={aY + aH + 5} width={34} height={17} rx={3} fill="#1e1152" />
-        <text x={cx1 + 22} y={aY + aH + 13} textAnchor="middle" dominantBaseline="central" fill="#a78bfa" fontSize={10} fontFamily="Consolas,monospace" fontWeight="bold">I[1]</text>
+        <line x1={cx1} y1={aY + aH} x2={cx1} y2={xY - xr - 1} stroke="#60a5fa" strokeWidth={1.5} markerEnd="url(#dec-arr)" />
 
         <circle cx={cx1} cy={xY} r={xr} fill="#1a0f00" stroke="#f97316" strokeWidth={1.5} />
         <text x={cx1} y={xY + 1} textAnchor="middle" dominantBaseline="central" fill="#f97316" fontSize={18}>⊕</text>
         <line x1={cx1} y1={xY + xr + 1} x2={cx1} y2={pY} stroke="#22c55e" strokeWidth={1.5} markerEnd="url(#dec-arr)" />
 
         <rect x={cx1 - bw / 2} y={pY} width={bw} height={bh} rx={4} fill="#052e16" stroke="#22c55e" strokeWidth={1.5} />
-        <text x={cx1} y={pY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#4ade80" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">P[1]</text>
+        <text x={cx1} y={pY + bh / 2} textAnchor="middle" dominantBaseline="central" fill="#4ade80" fontSize={12} fontFamily="Consolas,monospace" fontWeight="bold">P<tspan dy="4" fontSize="8">1</tspan></text>
       </svg>
     </figure>
   );

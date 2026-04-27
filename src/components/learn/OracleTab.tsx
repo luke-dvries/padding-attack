@@ -145,12 +145,12 @@ function OracleFlowSVG() {
 
         {/* Send modified ciphertext */}
         <line x1={71} y1={75} x2={409} y2={75} stroke="#3b82f6" strokeWidth={1.5} markerEnd="url(#ora-arr)" />
-        <text x={240} y={65} textAnchor="middle" fill="#93c5fd" fontSize={11} fontFamily="Consolas,monospace">Send modified (C&#x27;[i-1], C[i])</text>
+        <text x={240} y={65} textAnchor="middle" fill="#93c5fd" fontSize={11} fontFamily="Consolas,monospace">Send modified (C&#x27;<tspan dy="3" fontSize="7">i-1</tspan><tspan dy="-3">, C</tspan><tspan dy="3" fontSize="7">i</tspan><tspan dy="-3">)</tspan></text>
 
         {/* Server processing box */}
         <rect x={302} y={88} width={155} height={58} rx={5} fill="#0d1117" stroke="#374151" strokeWidth={1} />
-        <text x={379} y={104} textAnchor="middle" fill="#6b7280" fontSize={10} fontFamily="Consolas,monospace">1. AES_D( C[i] )</text>
-        <text x={379} y={119} textAnchor="middle" fill="#6b7280" fontSize={10} fontFamily="Consolas,monospace">2. XOR with C&#x27;[i-1]</text>
+        <text x={379} y={104} textAnchor="middle" fill="#6b7280" fontSize={10} fontFamily="Consolas,monospace">1. AES_D( C<tspan dy="3" fontSize="7">i</tspan><tspan dy="-3"> )</tspan></text>
+        <text x={379} y={119} textAnchor="middle" fill="#6b7280" fontSize={10} fontFamily="Consolas,monospace">2. XOR with C&#x27;<tspan dy="3" fontSize="7">i-1</tspan></text>
         <text x={379} y={134} textAnchor="middle" fill="#6b7280" fontSize={10} fontFamily="Consolas,monospace">3. check PKCS#7 padding</text>
 
         {/* Response */}

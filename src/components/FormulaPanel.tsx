@@ -54,10 +54,10 @@ export default function FormulaPanel({ attackState }: FormulaPanelProps) {
         <div className="formula-section">
           <div className="formula-title">Goal</div>
           <div className="formula-line">
-            Recover <code>P[{pos}]</code> = <code>I[{pos}] ⊕ C_orig[{pos}]</code>
+            Recover <code>P<sub>i</sub>[{pos}]</code> = <code>I<sub>i</sub>[{pos}] ⊕ C<sub>prev</sub>[{pos}]</code>
           </div>
           <div className="formula-line dim">
-            where <code>I[{pos}]</code> = <code>AES_block_decrypt(C[i])[{pos}]</code>
+            where <code>I<sub>i</sub>[{pos}]</code> = <code>AES_D(C<sub>i</sub>)[{pos}]</code>
           </div>
         </div>
 
@@ -72,7 +72,7 @@ export default function FormulaPanel({ attackState }: FormulaPanelProps) {
             Set <code>C'[{pos}] = guess</code> and ask oracle if
           </div>
           <div className="formula-line indent">
-            <code>I[{pos}] ⊕ guess == {h(pad)}</code>
+            <code>I<sub>i</sub>[{pos}] ⊕ guess == {h(pad)}</code>
           </div>
         </div>
 
@@ -84,7 +84,7 @@ export default function FormulaPanel({ attackState }: FormulaPanelProps) {
           </div>
           {phase === 'attacking' && (
             <div className="formula-line">
-              Testing: <code>I[{pos}] ⊕ {h(guess)} =? {h(pad)}</code>
+              Testing: <code>I<sub>i</sub>[{pos}] ⊕ {h(guess)} =? {h(pad)}</code>
             </div>
           )}
           {phaseDone && iFound !== undefined && iFound !== null && (
@@ -93,7 +93,7 @@ export default function FormulaPanel({ attackState }: FormulaPanelProps) {
                 ✓ Oracle: VALID — <code>{h(iFound)} ⊕ {h(guess)} = {h(pad)}</code>
               </div>
               <div className="formula-line success">
-                ∴ <code>I[{pos}]</code> = <code>{h(pad)} ⊕ {h(guess)} = <strong>{h(iFound)}</strong></code>
+                ∴ <code>I<sub>i</sub>[{pos}]</code> = <code>{h(pad)} ⊕ {h(guess)} = <strong>{h(iFound)}</strong></code>
               </div>
             </>
           )}
@@ -104,13 +104,13 @@ export default function FormulaPanel({ attackState }: FormulaPanelProps) {
           <div className="formula-section formula-result">
             <div className="formula-title">Result</div>
             <div className="formula-line">
-              <code>P[{pos}]</code> = <code>I[{pos}] ⊕ C_orig[{pos}]</code>
+              <code>P<sub>i</sub>[{pos}]</code> = <code>I<sub>i</sub>[{pos}] ⊕ C<sub>prev</sub>[{pos}]</code>
             </div>
             <div className="formula-line">
-              <code>P[{pos}]</code> = <code>{h(iFound)} ⊕ {h(originalPrevBlock[pos])}</code>
+              <code>P<sub>i</sub>[{pos}]</code> = <code>{h(iFound)} ⊕ {h(originalPrevBlock[pos])}</code>
             </div>
             <div className="formula-line success big">
-              <code>P[{pos}]</code> = <strong>{h(pFound)}</strong>
+              <code>P<sub>i</sub>[{pos}]</code> = <strong>{h(pFound)}</strong>
               {pFound >= 0x20 && pFound <= 0x7e
                 ? <span className="ascii-result"> = '{String.fromCharCode(pFound)}'</span>
                 : ''}
@@ -129,7 +129,7 @@ export default function FormulaPanel({ attackState }: FormulaPanelProps) {
                 const forced = known !== null ? (pad ^ known) : modifiedPrevBlock[j];
                 return (
                   <div key={j} className="formula-line small">
-                    <code>C'[{j}]</code> = {h(pad)} ⊕ <code>I[{j}]</code>
+                    <code>C'[{j}]</code> = {h(pad)} ⊕ <code>I<sub>i</sub>[{j}]</code>
                     {known !== null ? ` = ${h(pad)} ⊕ ${h(known)} = ${h(forced)}` : ' = ?'}
                   </div>
                 );
@@ -148,7 +148,7 @@ export default function FormulaPanel({ attackState }: FormulaPanelProps) {
                 <div
                   key={j}
                   className={`progress-cell ${p !== null ? 'done' : j === pos ? 'current' : 'pending'}`}
-                  title={p !== null ? `P[${j}] = ${h(p)}` : `byte ${j}`}
+                  title={p !== null ? `P_i[${j}] = ${h(p)}` : `byte ${j}`}
                 >
                   {p !== null ? byteToHex(p) : j === pos ? '?' : '·'}
                 </div>

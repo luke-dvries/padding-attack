@@ -13,6 +13,7 @@
  * Every cell is color-coded by role so relationships are immediately visible.
  */
 
+import type { ReactNode } from 'react';
 import { AttackState } from '../lib/attackEngine';
 import { BLOCK_SIZE } from '../lib/crypto';
 import { byteToHex, byteToAscii } from '../lib/format';
@@ -57,8 +58,8 @@ export default function AttackView({ attackState, showIntermediate }: AttackView
     phase,
   } = attackState;
 
-  const prevLabel = targetBlockIndex === 0 ? 'IV' : `C[${targetBlockIndex - 1}]`;
-  const targetLabel = `C[${targetBlockIndex}]`;
+  const prevLabel: ReactNode = targetBlockIndex === 0 ? 'IV' : <>C<sub>{targetBlockIndex - 1}</sub></>;
+  const targetLabel: ReactNode = <>C<sub>{targetBlockIndex}</sub></>;
 
   // Build display values and roles for each row
   const { vals: modVals, roles: modRoles } = buildModifiedRow(
@@ -110,7 +111,7 @@ export default function AttackView({ attackState, showIntermediate }: AttackView
 
       {/* ── Row 1: original previous block ── */}
       <BlockRow
-        label={`${prevLabel} original`}
+        label={<>{prevLabel} original</>}
         sublabel="original previous ciphertext block"
         rowClass="row-orig"
         values={Array.from(originalPrevBlock)}
@@ -124,7 +125,7 @@ export default function AttackView({ attackState, showIntermediate }: AttackView
 
       {/* ── Row 2: attacker-modified previous block ── */}
       <BlockRow
-        label="C'[prev] attacker"
+        label={<>C'<sub>prev</sub> attacker</>}
         sublabel="modified by attacker — controls what plaintext decrypts to"
         rowClass="row-modified"
         values={modVals}
@@ -140,7 +141,7 @@ export default function AttackView({ attackState, showIntermediate }: AttackView
 
       {/* ── Row 3: target ciphertext block ── */}
       <BlockRow
-        label={`${targetLabel} ciphertext`}
+        label={<>{targetLabel} ciphertext</>}
         sublabel="target block — never modified"
         rowClass="row-cipher"
         values={Array.from(cipherBlock)}
@@ -156,8 +157,8 @@ export default function AttackView({ attackState, showIntermediate }: AttackView
       {showIntermediate && (
         <>
           <BlockRow
-            label="I[i] intermediate"
-            sublabel="I[i] = AES_block_decrypt(C[i]) — revealed as attack progresses"
+            label={<>I<sub>i</sub> intermediate</>}
+            sublabel={<>I<sub>i</sub> = AES_D(C<sub>i</sub>) — revealed as attack progresses</>}
             rowClass="row-intermediate"
             values={intermediateVals}
             roles={intermediateRoles}
@@ -171,8 +172,8 @@ export default function AttackView({ attackState, showIntermediate }: AttackView
 
       {/* ── Row 5: recovered plaintext ── */}
       <BlockRow
-        label="P[i] plaintext"
-        sublabel={`P[i][j] = I[i][j] ⊕ ${prevLabel}[j] — recovered right-to-left`}
+        label={<>P<sub>i</sub> plaintext</>}
+        sublabel={<>P<sub>i</sub>[j] = I<sub>i</sub>[j] ⊕ {prevLabel}[j] — recovered right-to-left</>}
         rowClass="row-plaintext"
         values={Array.from({ length: BLOCK_SIZE }, (_, j) => knownPlaintext[j] ?? null)}
         roles={plaintextRoles}
@@ -201,8 +202,8 @@ function BlockRow({
   showCurrentGuess,
   currentGuessPos,
 }: {
-  label: string;
-  sublabel: string;
+  label: ReactNode;
+  sublabel: ReactNode;
   rowClass: string;
   values: (number | null)[];
   roles: Role[];
@@ -287,12 +288,13 @@ function Connector({ type, pos, blockSize, phase }: {
   blockSize: number;
   phase: string;
 }) {
-  const label = {
+  const labels: Record<typeof type, ReactNode> = {
     'modify':   '↕ attacker modifies these bytes',
     'xor-aes':  '⊕ XOR  +  AES CBC decryption',
     'aes':      '▼ AES block decrypt (key hidden)',
-    'xor-only': '⊕ XOR with C\'[prev]  →  decrypted output',
-  }[type];
+    'xor-only': <>⊕ XOR with C'<sub>prev</sub>  →  decrypted output</>,
+  };
+  const label = labels[type];
 
   return (
     <div className={`row-conn row-conn-${type}`}>

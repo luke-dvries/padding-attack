@@ -14,27 +14,27 @@ export default function AttackTab() {
 
       <h3>Setup</h3>
       <p>
-        To recover block <code>P[i]</code>, the attacker constructs a <em>modified previous
-        block</em> <code>C&#x27;[i-1]</code> and sends the pair <code>(C&#x27;[i-1],&nbsp;C[i])</code>
-        to the oracle. The oracle decrypts using its AES key and treats <code>C&#x27;[i-1]</code>
+        To recover block <code>P<sub>i</sub></code>, the attacker constructs a <em>modified previous
+        block</em> <code>C&#x27;<sub>i-1</sub></code> and sends the pair <code>(C&#x27;<sub>i-1</sub>,&nbsp;C<sub>i</sub>)</code>
+        to the oracle. The oracle decrypts using its AES key and treats <code>C&#x27;<sub>i-1</sub></code>
         as the preceding block:
       </p>
 
       <div className="lp-formula-box">
         <div className="lp-formula">
           <span className="lp-f-lbl">Result</span>
-          <code>P&#x27;[i] = AES_D(C[i]) ⊕ C&#x27;[i-1] = I[i] ⊕ C&#x27;[i-1]</code>
+          <code>P&#x27;<sub>i</sub> = AES_D(C<sub>i</sub>) ⊕ C&#x27;<sub>i-1</sub></code>
         </div>
         <div className="lp-formula" style={{ marginTop: 8 }}>
           <span className="lp-f-lbl">Key insight</span>
-          <code>I[i]</code>
-          <span className="lp-f-note">is fixed — it only depends on C[i] and the AES key, not on C&#x27;[i-1]</span>
+          <code>AES_D(C<sub>i</sub>)</code>
+          <span className="lp-f-note">is fixed — it only depends on C<sub>i</sub> and the AES key, not on C&#x27;<sub>i-1</sub></span>
         </div>
       </div>
 
       <p>
-        Because <code>I[i]</code> is fixed, the attacker fully controls the decrypted output
-        by choosing <code>C&#x27;[i-1]</code>. The goal is to craft <code>C&#x27;[i-1]</code>
+        Because <code>AES_D(C<sub>i</sub>)</code> is fixed, the attacker fully controls the decrypted output
+        by choosing <code>C&#x27;<sub>i-1</sub></code>. The goal is to craft <code>C&#x27;<sub>i-1</sub></code>
         such that the oracle returns &#34;valid,&#34; then use that confirmation to derive the
         true plaintext bytes.
       </p>
@@ -51,42 +51,42 @@ export default function AttackTab() {
         </Step>
 
         <Step n={2} title="Fix all bytes to the right of j (already-recovered positions)">
-          For each position <code>k &gt; j</code> where <code>I[i][k]</code> is already known,
+          For each position <code>k &gt; j</code> where <code>AES_D(C<sub>i</sub>)[k]</code> is already known,
           set:
           <div className="lp-formula-box inline">
-            <code>C&#x27;[k] = pad ⊕ I[i][k]</code>
+            <code>C&#x27;[k] = pad ⊕ AES_D(C<sub>i</sub>)[k]</code>
           </div>
-          This forces <code>P&#x27;[i][k] = I[i][k] ⊕ C&#x27;[k] = pad</code> — the correct
+          This forces <code>P&#x27;<sub>i</sub>[k] = AES_D(C<sub>i</sub>)[k] ⊕ C&#x27;[k] = pad</code> — the correct
           trailing-padding value — for every byte to the right of the current target.
         </Step>
 
         <Step n={3} title="Try all 256 possible values for position j">
           Set <code>C&#x27;[j] = guess</code>, cycling through <code>0x00</code> to
           <code> 0xFF</code>. For all positions to the left of <code>j</code>, leave
-          <code> C&#x27;[k] = C[i-1][k]</code> (unchanged — they don&#39;t yet affect
+          <code> C&#x27;[k] = C<sub>i-1</sub>[k]</code> (unchanged — they don&#39;t yet affect
           the padding check).
         </Step>
 
-        <Step n={4} title="Query the oracle with (C'[i-1], C[i])">
+        <Step n={4} title={<>Query the oracle with (C&#x27;<sub>i-1</sub>, C<sub>i</sub>)</>}>
           The oracle decrypts and checks whether the last <code>(16 − j)</code> bytes all equal
           <code> pad</code>.
           <ul className="lp-list" style={{ marginTop: 8 }}>
-            <li><strong>Invalid</strong> — <code>I[i][j] ⊕ guess ≠ pad</code>. Increment guess and try again.</li>
+            <li><strong>Invalid</strong> — <code>AES_D(C<sub>i</sub>)[j] ⊕ guess ≠ pad</code>. Increment guess and try again.</li>
             <li><strong>Valid</strong> — all trailing bytes produce the correct padding. Found it!</li>
           </ul>
         </Step>
 
-        <Step n={5} title="Derive the intermediate byte I[i][j]">
+        <Step n={5} title={<>Derive AES_D(C<sub>i</sub>)[j]</>}>
           When the oracle confirms valid padding:
           <div className="lp-formula-box inline">
-            <code>pad = I[i][j] ⊕ guess  →  I[i][j] = pad ⊕ guess</code>
+            <code>pad = AES_D(C<sub>i</sub>)[j] ⊕ guess  →  AES_D(C<sub>i</sub>)[j] = pad ⊕ guess</code>
           </div>
         </Step>
 
-        <Step n={6} title="Recover the plaintext byte P[i][j]">
-          XOR the intermediate byte with the <em>original</em> (unmodified) previous ciphertext byte:
+        <Step n={6} title={<>Recover the plaintext byte P<sub>i</sub>[j]</>}>
+          XOR the recovered decryption byte with the <em>original</em> (unmodified) previous ciphertext byte:
           <div className="lp-formula-box inline">
-            <code>P[i][j] = I[i][j] ⊕ C[i-1][j]</code>
+            <code>P<sub>i</sub>[j] = AES_D(C<sub>i</sub>)[j] ⊕ C<sub>i-1</sub>[j]</code>
           </div>
         </Step>
 
@@ -101,7 +101,7 @@ export default function AttackTab() {
         Occasionally the oracle returns &#34;valid&#34; for an incorrect guess — when an
         unintended padding pattern (e.g., two bytes of <code>0x02</code>) satisfies PKCS#7 by
         coincidence. This is detected by slightly modifying one of the preceding bytes in
-        <code> C&#x27;[i-1]</code> and re-querying: a false positive disappears while the true
+        <code> C&#x27;<sub>i-1</sub></code> and re-querying: a false positive disappears while the true
         answer persists.
       </p>
 
@@ -142,10 +142,10 @@ function AttackSetupSVG() {
   const xOff = 88;
 
   // Row definitions
-  const rows = [
-    { y: 10,  label: 'C[i-1]' },
-    { y: 58,  label: "C'[i-1]" },
-    { y: 106, label: 'C[i]' },
+  const rows: Array<{ y: number; label: React.ReactNode }> = [
+    { y: 10,  label: <>C<tspan dy="3" fontSize="8">i-1</tspan></> },
+    { y: 58,  label: <>C&#x27;<tspan dy="3" fontSize="8">i-1</tspan></> },
+    { y: 106, label: <>C<tspan dy="3" fontSize="8">i</tspan></> },
   ];
 
   function fill(ri: number, ci: number) {
@@ -246,7 +246,7 @@ function AttackSetupSVG() {
   );
 }
 
-function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
+function Step({ n, title, children }: { n: number; title: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="atk-step">
       <div className="atk-step-num">{n}</div>
