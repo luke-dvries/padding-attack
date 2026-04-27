@@ -32,10 +32,17 @@ export function useAttack(
   scenario: ScenarioData | null,
   targetBlockIndex: number
 ): UseAttackReturn {
-  const [state, setState] = useState<AttackState | null>(null);
+  const [state, _setState] = useState<AttackState | null>(null);
   const [history, setHistory] = useState<AttackState[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(400);
+
+  // Keep a ref always in sync with state so executeStep can read it synchronously
+  const stateRef = useRef<AttackState | null>(null);
+  const setState = useCallback((next: AttackState | null) => {
+    stateRef.current = next;
+    _setState(next);
+  }, []);
 
   const playRef = useRef(false);
   const speedRef = useRef(speed);
@@ -61,18 +68,14 @@ export function useAttack(
     );
     setState(initial);
     setHistory([]);
-  }, [scenario, targetBlockIndex]);
+  }, [scenario, targetBlockIndex, setState]);
 
   // ── Core step (returns next state) ───────────────────────────────────────
   const executeStep = useCallback(async (): Promise<AttackState | null> => {
     if (!scenario) return null;
 
-    // Capture current state synchronously
-    let current: AttackState | null = null;
-    setState(prev => { current = prev; return prev; });
-    if (!current) return null;
-
-    const s = current as AttackState;
+    const s = stateRef.current;
+    if (!s) return null;
     if (s.phase === 'block_complete') return s;
 
     if (s.phase === 'idle') {
@@ -99,7 +102,7 @@ export function useAttack(
     setHistory(h => [...h, s]);
     setState(next);
     return next;
-  }, [scenario]);
+  }, [scenario, setState]);
 
   // ── Public controls ───────────────────────────────────────────────────────
   const stepForward = useCallback(() => { executeStep(); }, [executeStep]);
@@ -107,10 +110,11 @@ export function useAttack(
   const stepBackward = useCallback(() => {
     setHistory(h => {
       if (h.length === 0) return h;
-      setState(h[h.length - 1]);
+      const prev = h[h.length - 1];
+      setState(prev);
       return h.slice(0, -1);
     });
-  }, []);
+  }, [setState]);
 
   /** Fast-forward through failing oracle guesses until the next byte is found */
   const skipToByte = useCallback(async () => {
@@ -139,7 +143,7 @@ export function useAttack(
     );
     setState(initial);
     setHistory([]);
-  }, [scenario, targetBlockIndex]);
+  }, [scenario, targetBlockIndex, setState]);
 
   const play = useCallback(() => { setIsPlaying(true); playRef.current = true; }, []);
   const pause = useCallback(() => { setIsPlaying(false); playRef.current = false; }, []);
