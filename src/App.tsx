@@ -16,6 +16,7 @@ import AttackView from './components/AttackView';
 import StepControls from './components/StepControls';
 import StepInfo from './components/StepInfo';
 import LearnPage from './components/LearnPage';
+import NotationCheatSheet from './components/NotationCheatSheet';
 
 type AppPage = 'attack' | 'learn';
 
@@ -87,6 +88,7 @@ export default function App() {
             >
               Learn
             </button>
+            <NotationCheatSheet />
           </nav>
         </div>
 
@@ -209,9 +211,9 @@ function CiphertextChain({
               <button
                 className={`chain-block chain-ct ${isTarget ? 'chain-target' : ''} ${isPrev ? 'chain-prev' : ''}`}
                 onClick={() => onSelectBlock(i)}
-                title={`Attack block C[${i}]`}
+                title={`Attack block C_${i}`}
               >
-                <div className="chain-block-name">C[{i}]</div>
+                <div className="chain-block-name">C<sub>{i}</sub></div>
                 <div className="chain-block-bytes">
                   {Array.from(block).map((b, j) => (
                     <span key={j} className="chain-byte">{byteToHex(b)}</span>
