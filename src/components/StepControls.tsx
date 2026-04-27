@@ -45,6 +45,7 @@ export default function StepControls({
 }: StepControlsProps) {
   const { phase, totalOracleCalls, currentBytePos, currentGuess, knownPlaintext } = state;
   const done = phase === 'block_complete';
+  const awaitingInput = phase === 'awaiting_input';
   const recoveredCount = knownPlaintext.filter(b => b !== null).length;
 
   return (
@@ -73,6 +74,9 @@ export default function StepControls({
               <span className="step-guess">guess 0x{byteToHex(currentGuess)}</span>
             </>
           )}
+          {phase === 'awaiting_input' && (
+            <span className="step-hint found">Byte {currentBytePos} — complete the XOR calculator to continue</span>
+          )}
           {phase === 'byte_found' && (
             <span className="step-hint found">Byte {currentBytePos} found — press → to continue</span>
           )}
@@ -90,7 +94,7 @@ export default function StepControls({
         <button
           className="nav-btn nav-forward"
           onClick={onForward}
-          disabled={isPlaying || done}
+          disabled={isPlaying || done || awaitingInput}
           title="Step forward (one oracle query)"
           aria-label="Step forward"
         >
@@ -100,7 +104,7 @@ export default function StepControls({
         <button
           className="nav-btn nav-skip"
           onClick={onSkip}
-          disabled={isPlaying || done || phase === 'idle'}
+          disabled={isPlaying || done || phase === 'idle' || awaitingInput}
           title="Skip to next byte found (jump over failed guesses)"
           aria-label="Skip to next byte found"
         >
@@ -115,7 +119,7 @@ export default function StepControls({
           <button
             className="nav-btn nav-play"
             onClick={onPlay}
-            disabled={done}
+            disabled={done || awaitingInput}
             title="Auto-play"
           >
             ▶

@@ -89,6 +89,8 @@ export default function AttackView({ attackState, showIntermediate }: AttackView
               ? `✓ All ${BLOCK_SIZE} bytes recovered`
               : phase === 'byte_found'
               ? `Byte ${pos} found — press → to continue`
+              : phase === 'awaiting_input'
+              ? `Byte ${pos} — oracle found valid padding! Compute the values.`
               : `Recovering byte ${pos} · trying guess ${toHex(guess)} · target padding ${toHex(pad)}`}
           </span>
         )}
@@ -343,7 +345,7 @@ function buildModifiedRow(
       // Current guess byte
       const v = phase === 'attacking' ? guess : modified[j];
       vals.push(v);
-      roles.push(phase === 'byte_found' || phase === 'block_complete' ? 'found' : 'guess');
+      roles.push(phase === 'byte_found' || phase === 'block_complete' || phase === 'awaiting_input' ? 'found' : 'guess');
     } else {
       // Already-solved suffix — forced to produce target padding value
       const known = knownIntermediate[j];

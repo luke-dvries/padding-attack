@@ -8,7 +8,9 @@ import {
   AttackState,
   advanceToNextByte,
   applyOracleResult,
+  applyOracleResultPending,
   buildModifiedPrevBlock,
+  commitFoundValues,
   initAttackState,
   startAttack,
 } from '../lib/attackEngine';
@@ -26,6 +28,7 @@ export interface UseAttackReturn {
   pause: () => void;
   reset: () => void;
   setSpeed: (ms: number) => void;
+  commitValues: (intermediateValue: number, plaintextValue: number) => void;
 }
 
 export function useAttack(
@@ -64,13 +67,15 @@ export function useAttack(
   }, [scenario, targetBlockIndex]);
 
   // ── Core step: use functional setState to always read the latest state ────
-  const executeStep = useCallback((): Promise<AttackState | null> => {
+  // When pending=true (skip mode), oracle-valid results go to 'awaiting_input'
+  // instead of auto-computing I and P values.
+  const executeStep = useCallback((pending = false): Promise<AttackState | null> => {
     if (!scenario) return Promise.resolve(null);
 
     return new Promise<AttackState | null>((resolve) => {
       setState(prev => {
         if (!prev) { resolve(null); return prev; }
-        if (prev.phase === 'block_complete') { resolve(prev); return prev; }
+        if (prev.phase === 'block_complete' || prev.phase === 'awaiting_input') { resolve(prev); return prev; }
 
         if (prev.phase === 'idle') {
           const next = startAttack(prev);
@@ -119,7 +124,9 @@ export function useAttack(
           setState(cur => {
             // Guard: if state was reset while the oracle was in flight, bail
             if (!cur || cur !== s) { resolve(cur); return cur; }
-            const next = applyOracleResult(s, oracleResult, modPrev);
+            const next = (pending && oracleResult)
+              ? applyOracleResultPending(s, modPrev)
+              : applyOracleResult(s, oracleResult, modPrev);
             setHistory(h => [...h, s]);
             resolve(next);
             return next;
@@ -143,13 +150,13 @@ export function useAttack(
     });
   }, []);
 
-  /** Fast-forward through failing oracle guesses until the next byte is found */
+  /** Fast-forward through failing oracle guesses until valid padding found, then show calculator */
   const skipToByte = useCallback(async () => {
     let guard = 0;
     while (guard++ < 300) {
-      const next = await executeStep();
+      const next = await executeStep(true);
       if (!next) break;
-      if (next.phase === 'byte_found' || next.phase === 'block_complete') break;
+      if (next.phase === 'awaiting_input' || next.phase === 'byte_found' || next.phase === 'block_complete') break;
     }
   }, [executeStep]);
 
@@ -176,6 +183,15 @@ export function useAttack(
   const pause = useCallback(() => { setIsPlaying(false); playRef.current = false; }, []);
   const handleSetSpeed = useCallback((ms: number) => { setSpeed(ms); speedRef.current = ms; }, []);
 
+  const handleCommitValues = useCallback((intermediateValue: number, plaintextValue: number) => {
+    setState(prev => {
+      if (!prev || prev.phase !== 'awaiting_input') return prev;
+      const next = commitFoundValues(prev, intermediateValue, plaintextValue);
+      setHistory(h => [...h, prev]);
+      return next;
+    });
+  }, []);
+
   // ── Auto-play: schedule one step at a time via setTimeout ─────────────────
   // Each state update triggers a re-render → effect re-runs → next step scheduled.
   // This avoids stale-ref issues from a long-running async while loop.
@@ -199,6 +215,7 @@ export function useAttack(
   return {
     state, canStepBack: history.length > 0, isPlaying, speed,
     stepForward, stepBackward, skipToByte, play, pause, reset, setSpeed: handleSetSpeed,
+    commitValues: handleCommitValues,
   };
 }
 

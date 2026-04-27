@@ -17,6 +17,7 @@ import StepControls from './components/StepControls';
 import StepInfo from './components/StepInfo';
 import LearnPage from './components/LearnPage';
 import NotationCheatSheet from './components/NotationCheatSheet';
+import XorCalculator from './components/XorCalculator';
 
 type AppPage = 'attack' | 'learn';
 
@@ -142,6 +143,16 @@ export default function App() {
                 attackState={attack.state}
                 showIntermediate={showIntermediate}
               />
+              {attack.state.phase === 'awaiting_input' && attack.state.pendingFound && (
+                <XorCalculator
+                  bytePos={attack.state.pendingFound.bytePos}
+                  targetPadding={attack.state.pendingFound.targetPadding}
+                  guess={attack.state.pendingFound.guess}
+                  originalPrevByte={attack.state.originalPrevBlock[attack.state.pendingFound.bytePos]}
+                  cipherByte={attack.state.cipherBlock[attack.state.pendingFound.bytePos]}
+                  onCommit={attack.commitValues}
+                />
+              )}
               <StepInfo attackState={attack.state} />
               <StepControls
                 state={attack.state}
