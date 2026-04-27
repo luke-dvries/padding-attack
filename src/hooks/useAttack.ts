@@ -95,7 +95,27 @@ export function useAttack(
         scenario.oracle(
           new Uint8Array(modPrev),
           new Uint8Array(s.cipherBlock)
-        ).then(oracleResult => {
+        ).then(async (rawResult) => {
+          let oracleResult = rawResult;
+
+          // False-positive detection for byte 15 (the first byte attacked).
+          // When the oracle returns true, the decrypted padding might be
+          // 0x02 0x02 or 0x03 0x03 0x03 etc. instead of the expected 0x01.
+          // Verify by flipping byte 14: if padding was truly 0x01, changing
+          // byte 14 doesn't affect it. If padding was longer, flipping
+          // byte 14 breaks it → false positive, keep searching.
+          if (oracleResult && s.currentBytePos === BLOCK_SIZE - 1) {
+            const verifyPrev = [...modPrev];
+            verifyPrev[BLOCK_SIZE - 2] ^= 0x01;
+            const verifyResult = await scenario.oracle(
+              new Uint8Array(verifyPrev),
+              new Uint8Array(s.cipherBlock)
+            );
+            if (!verifyResult) {
+              oracleResult = false; // was a false positive
+            }
+          }
+
           setState(cur => {
             // Guard: if state was reset while the oracle was in flight, bail
             if (!cur || cur !== s) { resolve(cur); return cur; }
