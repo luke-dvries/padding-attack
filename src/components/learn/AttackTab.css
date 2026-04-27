@@ -41,7 +41,7 @@
 
 .atk-step-content {
   font-size: 13px;
-  color: #64748b;
+  color: #94a3b8;
   line-height: 1.65;
 }
 
@@ -82,11 +82,12 @@
 
 .atk-stat-lbl {
   font-size: 11px;
-  color: #64748b;
+  color: #94a3b8;
   margin-top: 5px;
 }
 
 /* ── Diagram legend colors ── */
-.atk-legend-unchanged { color: #4b5563; }
+.atk-legend-unchanged { color: #4a7fa5; }
+.atk-legend-replaced  { color: #2d3f52; }
 .atk-legend-forced    { color: #f97316; }
 .atk-legend-guess     { color: #eab308; }

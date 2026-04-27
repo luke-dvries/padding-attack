@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type ReactNode } from 'react';
+import { useState, useRef, type ReactNode } from 'react';
 import './NotationCheatSheet.css';
 
 interface Entry {
@@ -74,17 +74,6 @@ export default function NotationCheatSheet() {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    function handleClick(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [open]);
-
   return (
     <div className="ncs-container" ref={containerRef}>
       <button
@@ -98,23 +87,26 @@ export default function NotationCheatSheet() {
       </button>
 
       {open && (
-        <div className="ncs-dropdown" role="dialog" aria-label="Notation cheat sheet">
-          <div className="ncs-header">
-            <span>Notation Cheat Sheet</span>
-            <button className="ncs-close" onClick={() => setOpen(false)} aria-label="Close">✕</button>
+        <>
+          <div className="ncs-backdrop" onClick={() => setOpen(false)} />
+          <div className="ncs-sidebar" role="dialog" aria-label="Notation cheat sheet">
+            <div className="ncs-header">
+              <span>Notation Cheat Sheet</span>
+              <button className="ncs-close" onClick={() => setOpen(false)} aria-label="Close">✕</button>
+            </div>
+            <ul className="ncs-list">
+              {ENTRIES.map((e, i) => (
+                <li key={i} className="ncs-entry">
+                  <div className="ncs-symbol">{e.symbol}</div>
+                  <div className="ncs-body">
+                    <div className="ncs-name">{e.name}</div>
+                    <div className="ncs-desc">{e.desc}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
-          <ul className="ncs-list">
-            {ENTRIES.map((e, i) => (
-              <li key={i} className="ncs-entry">
-                <div className="ncs-symbol">{e.symbol}</div>
-                <div className="ncs-body">
-                  <div className="ncs-name">{e.name}</div>
-                  <div className="ncs-desc">{e.desc}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+        </>
       )}
     </div>
   );

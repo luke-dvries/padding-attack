@@ -53,7 +53,7 @@
 
 .oracle-history-row span {
   padding: 8px 12px;
-  color: #64748b;
+  color: #94a3b8;
 }
 .oracle-history-row span:not(:last-child) {
   border-right: 1px solid #1e293b;
@@ -67,7 +67,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #94a3b8;
+  color: #cbd5e1;
 }
 
 .oracle-history-row:not(.oracle-history-head):hover {
