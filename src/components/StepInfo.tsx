@@ -50,6 +50,27 @@ export default function StepInfo({ attackState }: StepInfoProps) {
     );
   }
 
+  if (phase === 'awaiting_input') {
+    const { guess, bytePos, targetPadding: pad } = lastEntry;
+    return (
+      <div className="step-info step-info-valid">
+        <div className="si-badge badge-valid">VALID</div>
+        <div className="si-math">
+          <span className="si-math-line">
+            Byte {bytePos}: guess&nbsp;
+            <code>0x{byteToHex(guess)}</code>
+            &nbsp;with target padding&nbsp;
+            <code>0x{byteToHex(pad)}</code>
+            &nbsp;&mdash; oracle returned VALID!
+          </span>
+          <span className="si-math-line" style={{ color: '#f59e0b', marginTop: '0.25rem' }}>
+            Use the XOR calculator above to compute I<sub>i</sub>[{bytePos}] and P<sub>i</sub>[{bytePos}].
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   if (lastEntry.type === 'start' || lastEntry.type === 'advance') {
     return (
       <div className="step-info step-info-advance">

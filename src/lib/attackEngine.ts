@@ -44,6 +44,7 @@ import { BLOCK_SIZE } from './crypto';
 export type AttackPhase =
   | 'idle'           // Not yet started
   | 'attacking'      // Trying candidate bytes (oracle queries)
+  | 'awaiting_input' // Oracle found valid padding — waiting for user to compute I and P
   | 'byte_found'     // Last oracle call yielded valid padding — one byte solved
   | 'block_complete' // All 16 bytes recovered
 
@@ -88,6 +89,14 @@ export interface AttackState {
 
   phase: AttackPhase;
   lastOracleResult: boolean | null;
+
+  /** Set when phase === 'awaiting_input' — info needed for the XOR calculator */
+  pendingFound: {
+    guess: number;
+    targetPadding: number;
+    bytePos: number;
+    modifiedPrevBlock: number[];
+  } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -117,6 +126,7 @@ export function initAttackState(
     totalOracleCalls: 0,
     phase: 'idle',
     lastOracleResult: null,
+    pendingFound: null,
   };
 }
 
@@ -315,6 +325,75 @@ export function startAttack(state: AttackState): AttackState {
     message: `Attack started on block ${state.targetBlockIndex}. Recovering byte 15 first (target padding: 0x01).`,
   };
   return { ...state, phase: 'attacking', oracleLog: [entry] };
+}
+
+// ---------------------------------------------------------------------------
+// Pending oracle result (interactive mode — skip to byte)
+// ---------------------------------------------------------------------------
+
+/**
+ * Like applyOracleResult when oracle=true, but defers I/P computation to the user.
+ * Sets phase to 'awaiting_input' and stores pending info without filling
+ * knownIntermediate or knownPlaintext.
+ */
+export function applyOracleResultPending(
+  state: AttackState,
+  modifiedPrevUsed: number[]
+): AttackState {
+  const pos = state.currentBytePos;
+  const pad = state.targetPadding;
+  const guess = state.currentGuess;
+
+  const entry: OracleLogEntry = {
+    id: state.oracleLog.length,
+    type: 'found',
+    bytePos: pos,
+    targetPadding: pad,
+    guess,
+    modifiedPrevBlock: modifiedPrevUsed,
+    oracleResult: true,
+    message: `Byte ${pos}: guess ${fmtHex(guess)} → VALID! Now compute I[${pos}] and P[${pos}].`,
+  };
+
+  return {
+    ...state,
+    modifiedPrevBlock: modifiedPrevUsed,
+    oracleLog: [...state.oracleLog, entry],
+    totalOracleCalls: state.totalOracleCalls + 1,
+    phase: 'awaiting_input',
+    lastOracleResult: true,
+    currentGuess: guess,
+    pendingFound: { guess, targetPadding: pad, bytePos: pos, modifiedPrevBlock: modifiedPrevUsed },
+  };
+}
+
+/**
+ * Commit user-provided I and P values after the XOR calculator.
+ * Transitions from 'awaiting_input' to 'byte_found' or 'block_complete'.
+ */
+export function commitFoundValues(
+  state: AttackState,
+  intermediateValue: number,
+  plaintextValue: number
+): AttackState {
+  if (state.phase !== 'awaiting_input' || !state.pendingFound) return state;
+
+  const pos = state.pendingFound.bytePos;
+
+  const newIntermediate = [...state.knownIntermediate];
+  const newPlaintext = [...state.knownPlaintext];
+  newIntermediate[pos] = intermediateValue;
+  newPlaintext[pos] = plaintextValue;
+
+  const nextPhase: AttackPhase = pos === 0 ? 'block_complete' : 'byte_found';
+
+  return {
+    ...state,
+    knownIntermediate: newIntermediate,
+    knownPlaintext: newPlaintext,
+    phase: nextPhase,
+    pendingFound: null,
+  };
 }
 
 // ---------------------------------------------------------------------------

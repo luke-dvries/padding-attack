@@ -1,0 +1,342 @@
+/* XorCalculator.css — equation builder for interactive attack steps */
+
+.xor-calc {
+  background: #0f172a;
+  border: 1.5px solid #1e293b;
+  border-radius: 10px;
+  padding: 1.25rem;
+  max-width: 520px;
+  margin: 0.75rem auto;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.xor-calc-header {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f59e0b;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #1e293b;
+}
+
+.xor-calc-prompt {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin-bottom: 0.75rem;
+}
+
+.xor-calc-prompt code {
+  background: #334155;
+  color: #e2e8f0;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  font-size: 0.85rem;
+}
+
+.xor-calc-prompt strong {
+  color: #f59e0b;
+}
+
+/* Step indicator bar */
+.xor-calc-steps-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 0.75rem;
+}
+
+.step-dot {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #1e293b;
+  color: #475569;
+  border: 1.5px solid #334155;
+}
+
+.step-dot.done {
+  background: #065f46;
+  color: #6ee7b7;
+  border-color: #059669;
+}
+
+.step-dot.active {
+  background: #1e3a5f;
+  color: #60a5fa;
+  border-color: #3b82f6;
+}
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: #334155;
+  margin: 0 0.25rem;
+}
+
+/* Section labels */
+.xor-calc-section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+/* Value bank — clickable chips for operands */
+.value-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.value-chip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.4rem 0.6rem;
+  border: 1.5px solid #334155;
+  border-radius: 6px;
+  background: #1e293b;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  min-width: 4.5rem;
+}
+
+.value-chip:hover {
+  border-color: #64748b;
+  background: #253347;
+}
+
+.value-chip.selected-a {
+  border-color: #f59e0b;
+  background: #422006;
+  transform: translateY(-2px);
+}
+
+.value-chip.selected-b {
+  border-color: #3b82f6;
+  background: #172554;
+  transform: translateY(-2px);
+}
+
+.chip-value {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.chip-label {
+  font-size: 0.65rem;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.chip-badge {
+  position: absolute;
+  top: -0.4rem;
+  right: -0.3rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.selected-a .chip-badge {
+  background: #f59e0b;
+}
+
+.selected-b .chip-badge {
+  background: #3b82f6;
+}
+
+/* Operation picker */
+.op-bank {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.op-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  padding: 0.3rem 0.6rem;
+  border: 1.5px solid #334155;
+  border-radius: 6px;
+  background: #1e293b;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  min-width: 3rem;
+}
+
+.op-chip:hover {
+  border-color: #64748b;
+}
+
+.op-chip.selected {
+  border-color: #a855f7;
+  background: #3b0764;
+}
+
+.op-symbol {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.op-name {
+  font-size: 0.6rem;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.op-chip.selected .op-name {
+  color: #c084fc;
+}
+
+/* Equation display */
+.equation-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: #0c1222;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  justify-content: center;
+}
+
+.eq-slot, .eq-op-slot, .eq-result-slot {
+  min-width: 3.5rem;
+  text-align: center;
+}
+
+.eq-empty {
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.eq-filled {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.eq-a {
+  background: #422006;
+  color: #fbbf24;
+  border: 1px solid #f59e0b;
+}
+
+.eq-b {
+  background: #172554;
+  color: #60a5fa;
+  border: 1px solid #3b82f6;
+}
+
+.eq-op-filled {
+  color: #c084fc;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.eq-equals {
+  color: #475569;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.eq-result {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  background: #334155;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+/* Feedback */
+.xor-calc-feedback {
+  font-size: 0.82rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.xor-calc-feedback.error {
+  background: #450a0a;
+  border: 1px solid #7f1d1d;
+  color: #fca5a5;
+}
+
+.xor-calc-feedback.success {
+  background: #052e16;
+  border: 1px solid #166534;
+  color: #86efac;
+}
+
+/* Action buttons */
+.xor-calc-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.xor-calc-btn {
+  padding: 0.4rem 1rem;
+  border: 1.5px solid #475569;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+}
+
+.xor-calc-btn.secondary {
+  background: #1e293b;
+  color: #94a3b8;
+}
+
+.xor-calc-btn.secondary:hover {
+  background: #334155;
+}
+
+.xor-calc-btn.primary {
+  background: #1e3a5f;
+  color: #e2e8f0;
+  border-color: #3b82f6;
+}
+
+.xor-calc-btn.primary:hover {
+  background: #1e40af;
+}
+
+.xor-calc-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
