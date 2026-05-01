@@ -139,34 +139,45 @@ export default function App() {
                 targetBlockIndex={targetBlockIndex}
                 onSelectBlock={handleSelectBlock}
               />
-              <AttackView
-                attackState={attack.state}
-                showIntermediate={showIntermediate}
-              />
-              {attack.state.phase === 'awaiting_input' && attack.state.pendingFound && (
-                <XorCalculator
-                  bytePos={attack.state.pendingFound.bytePos}
-                  targetPadding={attack.state.pendingFound.targetPadding}
-                  guess={attack.state.pendingFound.guess}
-                  originalPrevByte={attack.state.originalPrevBlock[attack.state.pendingFound.bytePos]}
-                  cipherByte={attack.state.cipherBlock[attack.state.pendingFound.bytePos]}
-                  onCommit={attack.commitValues}
-                />
-              )}
-              <StepInfo attackState={attack.state} />
+              <div className="attack-main">
+                <div className="attack-left">
+                  <AttackView
+                    attackState={attack.state}
+                    showIntermediate={showIntermediate}
+                  />
+                  <StepInfo attackState={attack.state} />
+                </div>
+                <div className="attack-right">
+                  {attack.state.phase === 'awaiting_input' && attack.state.pendingFound ? (
+                    <XorCalculator
+                      key={`${targetBlockIndex}-${attack.state.pendingFound.bytePos}-${attack.state.pendingFound.guess}`}
+                      bytePos={attack.state.pendingFound.bytePos}
+                      targetPadding={attack.state.pendingFound.targetPadding}
+                      guess={attack.state.pendingFound.guess}
+                      originalPrevByte={attack.state.originalPrevBlock[attack.state.pendingFound.bytePos]}
+                      cipherByte={attack.state.cipherBlock[attack.state.pendingFound.bytePos]}
+                      onCommit={attack.commitValues}
+                    />
+                  ) : (
+                    <div className="calc-idle-panel">
+                      <div className="calc-idle-icon">⊕</div>
+                      <p className="calc-idle-title">XOR Calculator</p>
+                      <p className="calc-idle-msg">
+                        When the oracle finds valid padding, the interactive calculator
+                        will activate here to derive the intermediate and plaintext bytes.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
               <StepControls
                 state={attack.state}
                 canBack={attack.canStepBack}
-                isPlaying={attack.isPlaying}
-                speed={attack.speed}
                 showIntermediate={showIntermediate}
                 onBack={attack.stepBackward}
                 onForward={attack.stepForward}
                 onSkip={attack.skipToByte}
-                onPlay={attack.play}
-                onPause={attack.pause}
                 onReset={attack.reset}
-                onSetSpeed={attack.setSpeed}
                 onToggleIntermediate={() => setShowIntermediate(v => !v)}
               />
             </>

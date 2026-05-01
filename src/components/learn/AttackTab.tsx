@@ -1,7 +1,7 @@
 import type React from 'react';
 import './AttackTab.css';
 
-export default function AttackTab() {
+export default function AttackTab({ onNext, nextLabel }: { onNext?: () => void; nextLabel?: string }) {
   return (
     <div className="lp-section">
       <h2>How the Padding Oracle Attack Works</h2>
@@ -181,6 +181,13 @@ export default function AttackTab() {
         process animated byte-by-byte, with every oracle query logged and plaintext bytes
         filling in from right to left in real time.
       </div>
+      {onNext && (
+        <div className="lp-next-row">
+          <button className="lp-next-btn" onClick={onNext}>
+            Next: {nextLabel} <span className="lp-next-btn-arrow">→</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

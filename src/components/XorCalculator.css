@@ -1,13 +1,12 @@
 /* XorCalculator.css — equation builder for interactive attack steps */
 
 .xor-calc {
-  background: #0f172a;
-  border: 1.5px solid #1e293b;
-  border-radius: 10px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
   padding: 1.25rem;
-  max-width: 520px;
-  margin: 0.75rem auto;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  max-width: none;
+  margin: 0;
 }
 
 .xor-calc-header {
@@ -17,6 +16,11 @@
   margin-bottom: 0.5rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #1e293b;
+  position: sticky;
+  top: 0;
+  background: #080c16;
+  padding-top: 0.25rem;
+  z-index: 1;
 }
 
 .xor-calc-prompt {
@@ -164,52 +168,6 @@
 
 .selected-b .chip-badge {
   background: #3b82f6;
-}
-
-/* Operation picker */
-.op-bank {
-  display: flex;
-  gap: 0.35rem;
-  margin-bottom: 0.75rem;
-}
-
-.op-chip {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.05rem;
-  padding: 0.3rem 0.6rem;
-  border: 1.5px solid #334155;
-  border-radius: 6px;
-  background: #1e293b;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-  min-width: 3rem;
-}
-
-.op-chip:hover {
-  border-color: #64748b;
-}
-
-.op-chip.selected {
-  border-color: #a855f7;
-  background: #3b0764;
-}
-
-.op-symbol {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #e2e8f0;
-}
-
-.op-name {
-  font-size: 0.6rem;
-  color: #64748b;
-  text-transform: uppercase;
-}
-
-.op-chip.selected .op-name {
-  color: #c084fc;
 }
 
 /* Equation display */

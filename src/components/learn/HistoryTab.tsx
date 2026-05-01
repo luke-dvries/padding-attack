@@ -1,6 +1,6 @@
 import './HistoryTab.css';
 
-export default function HistoryTab() {
+export default function HistoryTab({ onNext, nextLabel }: { onNext?: () => void; nextLabel?: string }) {
   return (
     <div className="lp-section">
       <h2>History of CBC Padding Oracle Attacks</h2>
@@ -259,6 +259,13 @@ export default function HistoryTab() {
         (AES-GCM, ChaCha20-Poly1305). TLS 1.3, finalized in 2018, made this mandatory by
         removing all non-AEAD cipher suites.
       </div>
+      {onNext && (
+        <div className="lp-next-row">
+          <button className="lp-next-btn" onClick={onNext}>
+            Next: {nextLabel} <span className="lp-next-btn-arrow">→</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

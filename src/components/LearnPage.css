@@ -176,6 +176,40 @@
   margin: 0 auto;
 }
 
+/* ── Next page button ── */
+.lp-next-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid #1e293b;
+}
+
+.lp-next-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: #3b82f6;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.lp-next-btn:hover {
+  background: #2563eb;
+  transform: translateX(2px);
+}
+
+.lp-next-btn-arrow {
+  font-size: 18px;
+  line-height: 1;
+}
+
 /* ── Responsive ── */
 @media (max-width: 600px) {
   .lp-tabs { padding: 0 12px; }

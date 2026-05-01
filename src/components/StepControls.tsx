@@ -9,38 +9,22 @@ import { byteToHex } from '../lib/format';
 interface StepControlsProps {
   state: AttackState;
   canBack: boolean;
-  isPlaying: boolean;
-  speed: number;
   showIntermediate: boolean;
   onBack: () => void;
   onForward: () => void;
   onSkip: () => void;
-  onPlay: () => void;
-  onPause: () => void;
   onReset: () => void;
-  onSetSpeed: (ms: number) => void;
   onToggleIntermediate: () => void;
 }
-
-const SPEEDS = [
-  { label: 'Slow', ms: 700 },
-  { label: 'Med', ms: 300 },
-  { label: 'Fast', ms: 80 },
-];
 
 export default function StepControls({
   state,
   canBack,
-  isPlaying,
-  speed,
   showIntermediate,
   onBack,
   onForward,
   onSkip,
-  onPlay,
-  onPause,
   onReset,
-  onSetSpeed,
   onToggleIntermediate,
 }: StepControlsProps) {
   const { phase, totalOracleCalls, currentBytePos, currentGuess, knownPlaintext } = state;
@@ -56,7 +40,7 @@ export default function StepControls({
         <button
           className="nav-btn nav-back"
           onClick={onBack}
-          disabled={!canBack || isPlaying}
+          disabled={!canBack}
           title="Step backward"
           aria-label="Step backward"
         >
@@ -94,7 +78,7 @@ export default function StepControls({
         <button
           className="nav-btn nav-forward"
           onClick={onForward}
-          disabled={isPlaying || done || awaitingInput}
+          disabled={done || awaitingInput}
           title="Step forward (one oracle query)"
           aria-label="Step forward"
         >
@@ -104,53 +88,24 @@ export default function StepControls({
         <button
           className="nav-btn nav-skip"
           onClick={onSkip}
-          disabled={isPlaying || done || phase === 'idle' || awaitingInput}
-          title="Skip to next byte found (jump over failed guesses)"
-          aria-label="Skip to next byte found"
+          disabled={done || phase === 'idle' || awaitingInput}
+          title="Brute force the current byte (jump over failed guesses)"
+          aria-label="Brute force next byte"
         >
-          →|
+          Brute Force Next Byte
         </button>
-
-        {isPlaying ? (
-          <button className="nav-btn nav-play active" onClick={onPause} title="Pause auto-play">
-            ⏸
-          </button>
-        ) : (
-          <button
-            className="nav-btn nav-play"
-            onClick={onPlay}
-            disabled={done || awaitingInput}
-            title="Auto-play"
-          >
-            ▶
-          </button>
-        )}
 
         <button
           className="nav-btn nav-reset"
           onClick={onReset}
           title="Reset attack"
-          disabled={isPlaying}
         >
           ↺
         </button>
       </div>
 
-      {/* Right: speed + options */}
+      {/* Right: options */}
       <div className="ctrl-right">
-        <div className="speed-group">
-          {SPEEDS.map(s => (
-            <button
-              key={s.ms}
-              className={`speed-btn ${speed === s.ms ? 'active' : ''}`}
-              onClick={() => onSetSpeed(s.ms)}
-              title={`${s.label} speed`}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-
         <label className="toggle-pill" title="Show/hide intermediate state row">
           <input
             type="checkbox"

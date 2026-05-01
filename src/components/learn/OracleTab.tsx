@@ -1,6 +1,6 @@
 import './OracleTab.css';
 
-export default function OracleTab() {
+export default function OracleTab({ onNext, nextLabel }: { onNext?: () => void; nextLabel?: string }) {
   return (
     <div className="lp-section">
       <h2>What Is a Padding Oracle?</h2>
@@ -117,6 +117,13 @@ export default function OracleTab() {
           <strong> 2&thinsp;048 queries</strong>. No key material is ever needed.
         </p>
       </div>
+      {onNext && (
+        <div className="lp-next-row">
+          <button className="lp-next-btn" onClick={onNext}>
+            Next: {nextLabel} <span className="lp-next-btn-arrow">→</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

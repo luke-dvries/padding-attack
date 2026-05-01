@@ -1,6 +1,6 @@
 import './ImpactTab.css';
 
-export default function ImpactTab() {
+export default function ImpactTab({ onNext, nextLabel }: { onNext?: () => void; nextLabel?: string }) {
   return (
     <div className="lp-section">
       <h2>Real-World Impact</h2>

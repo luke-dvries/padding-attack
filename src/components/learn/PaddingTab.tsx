@@ -1,6 +1,6 @@
 import './PaddingTab.css';
 
-export default function PaddingTab() {
+export default function PaddingTab({ onNext, nextLabel }: { onNext?: () => void; nextLabel?: string }) {
   return (
     <div className="lp-section">
       <h2>PKCS#7 Padding</h2>
@@ -80,6 +80,13 @@ export default function PaddingTab() {
         a redirect, or even a timing difference — leaks one bit of information per ciphertext
         query. As the next tab explains, that single bit is enough to fully recover the plaintext.
       </div>
+      {onNext && (
+        <div className="lp-next-row">
+          <button className="lp-next-btn" onClick={onNext}>
+            Next: {nextLabel} <span className="lp-next-btn-arrow">→</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

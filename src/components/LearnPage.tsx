@@ -21,6 +21,11 @@ const TABS: { id: Tab; label: string }[] = [
 export default function LearnPage() {
   const [tab, setTab] = useState<Tab>('cbc');
 
+  const tabIndex = TABS.findIndex(t => t.id === tab);
+  const nextTab = TABS[tabIndex + 1];
+  const onNext = nextTab ? () => setTab(nextTab.id) : undefined;
+  const nextLabel = nextTab?.label;
+
   return (
     <div className="lp">
       <nav className="lp-tabs" aria-label="Learn page sections">
@@ -36,12 +41,12 @@ export default function LearnPage() {
       </nav>
 
       <div className="lp-body">
-        {tab === 'cbc'     && <CBCTab />}
-        {tab === 'padding' && <PaddingTab />}
-        {tab === 'oracle'  && <OracleTab />}
-        {tab === 'attack'  && <AttackTab />}
-        {tab === 'history' && <HistoryTab />}
-        {tab === 'impact'  && <ImpactTab />}
+        {tab === 'cbc'     && <CBCTab     onNext={onNext} nextLabel={nextLabel} />}
+        {tab === 'padding' && <PaddingTab onNext={onNext} nextLabel={nextLabel} />}
+        {tab === 'oracle'  && <OracleTab  onNext={onNext} nextLabel={nextLabel} />}
+        {tab === 'attack'  && <AttackTab  onNext={onNext} nextLabel={nextLabel} />}
+        {tab === 'history' && <HistoryTab onNext={onNext} nextLabel={nextLabel} />}
+        {tab === 'impact'  && <ImpactTab  onNext={onNext} nextLabel={nextLabel} />}
       </div>
     </div>
   );

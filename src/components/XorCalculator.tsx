@@ -10,7 +10,7 @@
  * *what* to compute and *why*, not just doing arithmetic.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { byteToHex } from '../lib/format';
 import './XorCalculator.css';
 
@@ -30,24 +30,17 @@ interface ValueChip {
   value: number;
 }
 
-type Operation = 'XOR' | 'AND' | 'OR' | 'ADD' | 'SUB';
+function xor(a: number, b: number): number {
+  return (a ^ b) & 0xff;
+}
 
-const OPERATIONS: { id: Operation; symbol: string }[] = [
-  { id: 'XOR', symbol: '\u2295' },
-  { id: 'AND', symbol: '&' },
-  { id: 'OR',  symbol: '|' },
-  { id: 'ADD', symbol: '+' },
-  { id: 'SUB', symbol: '\u2212' },
-];
-
-function computeOp(a: number, b: number, op: Operation): number {
-  switch (op) {
-    case 'XOR': return (a ^ b) & 0xff;
-    case 'AND': return (a & b) & 0xff;
-    case 'OR':  return (a | b) & 0xff;
-    case 'ADD': return (a + b) & 0xff;
-    case 'SUB': return (a - b) & 0xff;
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
   }
+  return a;
 }
 
 export default function XorCalculator({
@@ -66,27 +59,29 @@ export default function XorCalculator({
 
   // Equation builder state
   const [selectedA, setSelectedA] = useState<string | null>(null);
-  const [selectedOp, setSelectedOp] = useState<Operation | null>(null);
   const [selectedB, setSelectedB] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'error' | 'success'; msg: string } | null>(null);
 
-  // Available values for each step
-  const step1Values: ValueChip[] = [
-    { id: 'pad',    label: `0x${byteToHex(targetPadding)}`, sublabel: 'target padding',     value: targetPadding },
-    { id: 'guess',  label: `0x${byteToHex(guess)}`,         sublabel: 'successful guess',    value: guess },
-    { id: 'cprev',  label: `0x${byteToHex(originalPrevByte)}`, sublabel: `C_prev[${bytePos}]`, value: originalPrevByte },
-    { id: 'ctarg',  label: `0x${byteToHex(cipherByte)}`,    sublabel: `C_i[${bytePos}]`,     value: cipherByte },
-  ];
-
-  const step2Values: ValueChip[] = intermediateResult !== null ? [
-    { id: 'inter',  label: `0x${byteToHex(intermediateResult)}`, sublabel: `I_i[${bytePos}]`,   value: intermediateResult },
-    { id: 'cprev',  label: `0x${byteToHex(originalPrevByte)}`,   sublabel: `C_prev[${bytePos}]`, value: originalPrevByte },
-    { id: 'ctarg',  label: `0x${byteToHex(cipherByte)}`,         sublabel: `C_i[${bytePos}]`,    value: cipherByte },
-    { id: 'pad',    label: `0x${byteToHex(targetPadding)}`,      sublabel: 'target padding',     value: targetPadding },
-    { id: 'guess',  label: `0x${byteToHex(guess)}`,              sublabel: 'successful guess',    value: guess },
-  ] : [];
-
-  const values = step === 1 ? step1Values : step2Values;
+  // Available values for each step — shuffled once per step
+  const values = useMemo<ValueChip[]>(() => {
+    if (step === 1) {
+      return shuffle([
+        { id: 'pad',   label: `0x${byteToHex(targetPadding)}`,    sublabel: 'target padding',      value: targetPadding },
+        { id: 'guess', label: `0x${byteToHex(guess)}`,            sublabel: 'successful guess',     value: guess },
+        { id: 'cprev', label: `0x${byteToHex(originalPrevByte)}`, sublabel: `C_prev[${bytePos}]`,  value: originalPrevByte },
+        { id: 'ctarg', label: `0x${byteToHex(cipherByte)}`,       sublabel: `C_i[${bytePos}]`,     value: cipherByte },
+      ]);
+    }
+    if (intermediateResult === null) return [];
+    return shuffle([
+      { id: 'inter',  label: `0x${byteToHex(intermediateResult)}`, sublabel: `I_i[${bytePos}]`,    value: intermediateResult },
+      { id: 'cprev',  label: `0x${byteToHex(originalPrevByte)}`,   sublabel: `C_prev[${bytePos}]`, value: originalPrevByte },
+      { id: 'ctarg',  label: `0x${byteToHex(cipherByte)}`,         sublabel: `C_i[${bytePos}]`,    value: cipherByte },
+      { id: 'pad',    label: `0x${byteToHex(targetPadding)}`,      sublabel: 'target padding',      value: targetPadding },
+      { id: 'guess',  label: `0x${byteToHex(guess)}`,              sublabel: 'successful guess',    value: guess },
+    ]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, intermediateResult !== null]);
 
   const handleSelectValue = useCallback((id: string) => {
     setFeedback(null);
@@ -104,14 +99,8 @@ export default function XorCalculator({
     }
   }, [selectedA, selectedB]);
 
-  const handleSelectOp = useCallback((op: Operation) => {
-    setFeedback(null);
-    setSelectedOp(prev => prev === op ? null : op);
-  }, []);
-
   const clearEquation = useCallback(() => {
     setSelectedA(null);
-    setSelectedOp(null);
     setSelectedB(null);
     setFeedback(null);
   }, []);
@@ -119,8 +108,8 @@ export default function XorCalculator({
   const getChip = (id: string): ValueChip | undefined => values.find(v => v.id === id);
 
   const handleSubmit = useCallback(() => {
-    if (!selectedA || !selectedOp || !selectedB) {
-      setFeedback({ type: 'error', msg: 'Build a complete equation: pick two values and an operation.' });
+    if (!selectedA || !selectedB) {
+      setFeedback({ type: 'error', msg: 'Pick two values to XOR together.' });
       return;
     }
 
@@ -128,23 +117,20 @@ export default function XorCalculator({
     const chipB = getChip(selectedB);
     if (!chipA || !chipB) return;
 
-    const result = computeOp(chipA.value, chipB.value, selectedOp);
+    const result = xor(chipA.value, chipB.value);
 
     if (step === 1) {
       if (result === correctIntermediate) {
         setFeedback({ type: 'success', msg: `Correct! I_i[${bytePos}] = 0x${byteToHex(result)}` });
         setIntermediateResult(result);
-        // Auto-advance to step 2 after a brief moment
         setTimeout(() => {
           setStep(2);
           setSelectedA(null);
-          setSelectedOp(null);
           setSelectedB(null);
           setFeedback(null);
         }, 800);
       } else {
-        // Give a contextual hint based on what they got wrong
-        const hint = getStep1Hint(selectedA, selectedB, selectedOp);
+        const hint = getStep1Hint(selectedA, selectedB);
         setFeedback({ type: 'error', msg: hint });
       }
     } else {
@@ -154,15 +140,15 @@ export default function XorCalculator({
           onCommit(correctIntermediate, correctPlaintext);
         }, 600);
       } else {
-        const hint = getStep2Hint(selectedA, selectedB, selectedOp);
+        const hint = getStep2Hint(selectedA, selectedB);
         setFeedback({ type: 'error', msg: hint });
       }
     }
-  }, [selectedA, selectedOp, selectedB, step, values, correctIntermediate, correctPlaintext, bytePos, onCommit]);
+  }, [selectedA, selectedB, step, values, correctIntermediate, correctPlaintext, bytePos, onCommit]);
 
   const chipA = selectedA ? getChip(selectedA) : null;
   const chipB = selectedB ? getChip(selectedB) : null;
-  const equationComplete = selectedA && selectedOp && selectedB;
+  const equationComplete = selectedA && selectedB;
 
   return (
     <div className="xor-calc">
@@ -217,21 +203,6 @@ export default function XorCalculator({
         })}
       </div>
 
-      {/* Operation picker */}
-      <div className="xor-calc-section-label">Operation:</div>
-      <div className="op-bank">
-        {OPERATIONS.map(op => (
-          <button
-            key={op.id}
-            className={`op-chip ${selectedOp === op.id ? 'selected' : ''}`}
-            onClick={() => handleSelectOp(op.id)}
-          >
-            <span className="op-symbol">{op.symbol}</span>
-            <span className="op-name">{op.id}</span>
-          </button>
-        ))}
-      </div>
-
       {/* Equation display */}
       <div className="equation-display">
         <div className="eq-slot">
@@ -242,11 +213,7 @@ export default function XorCalculator({
           )}
         </div>
         <div className="eq-op-slot">
-          {selectedOp ? (
-            <span className="eq-op-filled">{OPERATIONS.find(o => o.id === selectedOp)?.symbol}</span>
-          ) : (
-            <span className="eq-empty">op</span>
-          )}
+          <span className="eq-op-filled">⊕</span>
         </div>
         <div className="eq-slot">
           {chipB ? (
@@ -257,8 +224,8 @@ export default function XorCalculator({
         </div>
         <span className="eq-equals">=</span>
         <div className="eq-result-slot">
-          {equationComplete && chipA && chipB && selectedOp ? (
-            <span className="eq-result">0x{byteToHex(computeOp(chipA.value, chipB.value, selectedOp))}</span>
+          {equationComplete && chipA && chipB ? (
+            <span className="eq-result">0x{byteToHex(xor(chipA.value, chipB.value))}</span>
           ) : (
             <span className="eq-empty">?</span>
           )}
@@ -291,32 +258,23 @@ export default function XorCalculator({
 // Hints — guide the user toward the right reasoning without giving it away
 // ---------------------------------------------------------------------------
 
-function getStep1Hint(a: string, b: string, op: Operation): string {
+function getStep1Hint(a: string, b: string): string {
   const usedPad = a === 'pad' || b === 'pad';
   const usedGuess = a === 'guess' || b === 'guess';
-
-  if (op !== 'XOR') {
-    return 'Think about CBC decryption. The relationship between intermediate bytes and ciphertext uses XOR, not ' + op + '.';
-  }
   if (!usedPad || !usedGuess) {
-    return 'The oracle told us that I[pos] XOR guess = target_padding. Which two values should you XOR to isolate I[pos]?';
+    return 'The oracle told us that I[pos] ⊕ guess = target_padding. Which two values should you XOR to isolate I[pos]?';
   }
-  // Right operands, right operation, but somehow wrong? Shouldn't happen with XOR being commutative
   return 'Almost! Check which values you selected — you need the target padding and the successful guess.';
 }
 
-function getStep2Hint(a: string, b: string, op: Operation): string {
+function getStep2Hint(a: string, b: string): string {
   const usedInter = a === 'inter' || b === 'inter';
   const usedCprev = a === 'cprev' || b === 'cprev';
-
-  if (op !== 'XOR') {
-    return 'Remember: CBC decryption is P[i] = I[i] XOR C_prev[i]. What operation is that?';
-  }
   if (!usedInter) {
     return 'You just found the intermediate value I[pos]. You need it to compute the plaintext.';
   }
   if (!usedCprev) {
-    return 'In CBC mode, plaintext = intermediate XOR previous_ciphertext_block. Which value is the previous block byte?';
+    return 'In CBC mode, plaintext = intermediate ⊕ previous_ciphertext_block. Which value is the previous block byte?';
   }
   return 'Check your selections — you need I[pos] and the original C_prev[pos].';
 }
