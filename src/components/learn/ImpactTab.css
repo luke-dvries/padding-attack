@@ -30,14 +30,14 @@
 }
 
 .impact-card-title {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: #e2e8f0;
   flex: 1;
 }
 
 .impact-badge {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -50,12 +50,12 @@
 .impact-badge-critical { background: rgba(239,68,68,0.12);  color: #ef4444; }
 
 .impact-card-body {
-  font-size: 12px;
-  color: #64748b;
+  font-size: 14px;
+  color: #94a3b8;
   line-height: 1.65;
   margin: 0;
 }
-.impact-card-body em { color: #93c5fd; font-style: italic; }
+.impact-card-body em { color: #bfdbfe; font-style: italic; }
 
 /* ── Per-attack impact blocks ── */
 .attack-impact {
@@ -70,7 +70,7 @@
 .attack-impact-name {
   background: #111827;
   padding: 10px 16px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #e2e8f0;
   border-bottom: 1px solid #1e293b;
@@ -88,23 +88,23 @@
 .aim-row {
   display: flex;
   gap: 10px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
 .aim-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #94a3b8;
+  color: #cbd5e1;
   min-width: 80px;
   flex-shrink: 0;
   padding-top: 1px;
 }
 
 .aim-value {
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .attack-impact-detail {
@@ -112,8 +112,8 @@
 }
 
 .attack-impact-detail p {
-  font-size: 13px;
-  color: #64748b;
+  font-size: 15px;
+  color: #94a3b8;
   line-height: 1.7;
   margin-bottom: 10px;
 }
@@ -121,7 +121,7 @@
 .attack-impact-detail strong { color: #e2e8f0; }
 .attack-impact-detail code {
   font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 13px;
   color: #e2e8f0;
   background: #1e293b;
   padding: 1px 5px;
@@ -139,8 +139,8 @@
   border-radius: 6px;
   padding: 16px 18px;
   margin: 24px 0 0;
-  font-size: 13px;
-  color: #64748b;
+  font-size: 15px;
+  color: #94a3b8;
   line-height: 1.7;
 }
 
