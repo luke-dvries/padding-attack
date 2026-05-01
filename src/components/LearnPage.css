@@ -23,7 +23,7 @@
   border: none;
   border-bottom: 2px solid transparent;
   color: #94a3b8;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -47,7 +47,7 @@
 }
 
 .lp-section h2 {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: #e2e8f0;
   margin-bottom: 16px;
@@ -55,7 +55,7 @@
 }
 
 .lp-section h3 {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
   color: #e2e8f0;
   margin-top: 30px;
@@ -64,13 +64,14 @@
 
 .lp-section p {
   color: #94a3b8;
+  font-size: 15px;
   line-height: 1.7;
   margin-bottom: 12px;
 }
 
 .lp-section code {
   font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 13px;
+  font-size: 14px;
   color: #e2e8f0;
   background: #1e293b;
   padding: 1px 5px;
@@ -84,7 +85,7 @@
   border-radius: 6px;
   padding: 14px 18px;
   margin: 12px 0 20px;
-  font-size: 13px;
+  font-size: 15px;
   color: #94a3b8;
   line-height: 1.7;
 }
@@ -95,7 +96,7 @@
 .lp-formula-box code {
   background: none;
   padding: 0;
-  font-size: 14px;
+  font-size: 15px;
 }
 .lp-formula-box strong { color: #e2e8f0; }
 
@@ -107,7 +108,7 @@
 }
 
 .lp-f-lbl {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: #cbd5e1;
   text-transform: uppercase;
@@ -117,7 +118,7 @@
 }
 
 .lp-f-note {
-  font-size: 11px;
+  font-size: 12px;
   color: #64748b;
   font-style: italic;
 }
@@ -130,7 +131,7 @@
   border-radius: 6px;
   padding: 14px 18px;
   margin: 20px 0;
-  font-size: 13px;
+  font-size: 15px;
   color: #94a3b8;
   line-height: 1.7;
 }
@@ -141,7 +142,7 @@
 /* ── List ── */
 .lp-list {
   color: #94a3b8;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.7;
   padding-left: 20px;
   margin-bottom: 12px;
@@ -160,7 +161,7 @@
 }
 
 .lp-diagram figcaption {
-  font-size: 11px;
+  font-size: 12px;
   color: #64748b;
   text-align: center;
   margin-bottom: 14px;

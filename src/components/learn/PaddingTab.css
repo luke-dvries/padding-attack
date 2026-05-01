@@ -10,7 +10,7 @@
 .pad-invalid { border-color: rgba(239, 68, 68, 0.22); }
 
 .pad-ex-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   margin-bottom: 8px;
 }
@@ -31,7 +31,7 @@
   align-items: center;
   justify-content: center;
   font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   border-radius: 4px;
   background: #111827;
@@ -51,7 +51,7 @@
 }
 
 .pad-ex-desc {
-  font-size: 12px;
+  font-size: 13px;
   color: #94a3b8;
   font-style: italic;
 }
